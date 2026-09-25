@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function sitemap(): MetadataRoute.Sitemap { const base = process.env.NEXT_PUBLIC_SITE_URL || "https://airfryer.vercel.app"; return [{ url: base, changeFrequency: "daily", priority: 1 }, { url: base + "/air-fryers", changeFrequency: "daily", priority: 0.8 }, { url: base + "/brands", changeFrequency: "weekly", priority: 0.6 }]; }
