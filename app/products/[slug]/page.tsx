@@ -27,7 +27,7 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const fields = [
+  const fields: Array<[string, unknown]> = [
     ["Capacity", product.capacity_quart ? `${product.capacity_quart} qt` : null],
     ["Power", product.wattage ? `${product.wattage} W` : null],
     ["Basket", product.basket_type],
