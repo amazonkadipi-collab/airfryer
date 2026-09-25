@@ -1,0 +1,2 @@
+export const metadata = { title: "Air Fryer Brands", description: "Explore air fryer brands and structured product data." };
+export default function BrandsPage(){ return <main className="mx-auto min-h-screen max-w-6xl px-5 py-16"><h1 className="text-4xl font-bold">Air Fryer Brands</h1><p className="mt-4 text-slate-600">Brand pages will be published from verified product data.</p></main> }
