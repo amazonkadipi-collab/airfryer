@@ -3,7 +3,7 @@
 English-first, data-driven air fryer discovery and comparison platform.
 
 ## Stack
-Next.js App Router, TypeScript, Tailwind CSS, Supabase PostgreSQL, Vercel.
+Next.js App Router, TypeScript, Tailwind CSS, Neon PostgreSQL, Vercel.
 
 ## Principles
 - Real structured product data over AI-generated filler
@@ -16,4 +16,4 @@ Next.js App Router, TypeScript, Tailwind CSS, Supabase PostgreSQL, Vercel.
 npm install
 npm run dev
 
-Set NEXT_PUBLIC_SITE_URL for production canonical URLs. Supabase credentials will be added server-side when the database layer is connected.
+Set NEXT_PUBLIC_SITE_URL for production canonical URLs. Set DATABASE_URL server-side when the Neon database is connected.
