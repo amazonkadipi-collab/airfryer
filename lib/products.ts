@@ -29,7 +29,7 @@ export async function searchProducts(query: string): Promise<ProductSearchRow[]>
   const db = getDb();
   if (!db || !query.trim()) return [];
   const q = query.trim();
-  return db<ProductSearchRow[]>`
+  const rows = await db`
     SELECT p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
       (CASE WHEN lower(coalesce(p.model, '')) = lower(${q}) THEN 100 ELSE 0 END +
        CASE WHEN lower(p.title) = lower(${q}) THEN 90 ELSE 0 END +
@@ -47,6 +47,7 @@ export async function searchProducts(query: string): Promise<ProductSearchRow[]>
     )
     ORDER BY match_score DESC, quality_score DESC NULLS LAST, p.title ASC LIMIT 24
   `;
+  return rows as unknown as ProductSearchRow[];
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductRecord | null> {
