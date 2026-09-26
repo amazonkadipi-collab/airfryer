@@ -53,7 +53,7 @@ export async function searchProducts(query: string): Promise<ProductSearchRow[]>
 export async function getProductBySlug(slug: string): Promise<ProductRecord | null> {
   const db = getDb();
   if (!db) return null;
-  const rows = await db<ProductRecord[]>`
+  const rows = await db`
     SELECT p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
       p.description, p.capacity_liters, p.wattage, p.basket_type, p.basket_count,
       p.dishwasher_safe, p.rotisserie, p.digital_controls, p.temperature_min, p.temperature_max,
@@ -67,7 +67,7 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
 export async function getComparisonBySlug(slug: string) {
   const db = getDb();
   if (!db) return null;
-  const rows = await db<Array<{slug:string; status:string; search_demand:number|null; quality_score:number|null; a:ProductRecord; b:ProductRecord}>>`
+  const rows = await db`
     SELECT c.slug, c.status, c.search_demand, c.quality_score,
       json_build_object('slug', a.slug, 'title', a.title, 'model', a.model, 'brand_name', ba.name,
         'capacity_quart', a.capacity_quart, 'quality_score', a.quality_score, 'description', a.description,
@@ -92,7 +92,7 @@ export async function getComparisonBySlug(slug: string) {
 export async function getAlternatives(slug: string) {
   const db = getDb();
   if (!db) return { product: null, alternatives: [] };
-  const rows = await db<Array<{product:ProductRecord; match_score:number}>>`
+  const rows = await db`
     WITH target AS (SELECT * FROM products WHERE slug = ${slug} AND status = 'active' LIMIT 1)
     SELECT json_build_object('slug', t.slug, 'title', t.title, 'model', t.model, 'brand_name', bt.name,
       'capacity_quart', t.capacity_quart, 'quality_score', t.quality_score, 'description', t.description,
