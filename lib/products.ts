@@ -61,9 +61,8 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
     FROM products p LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.slug = ${slug} AND p.status = 'active' LIMIT 1
   `;
-  return rows[0] ?? null;
+  return (rows[0] ?? null) as unknown as ProductRecord | null;
 }
-
 
 export type ComparisonProduct = ProductRecord;
 export type ComparisonRecord = {
@@ -74,8 +73,6 @@ export type ComparisonRecord = {
   a: ComparisonProduct;
   b: ComparisonProduct;
 };
-
-type AlternativeRow = { product: ProductRecord; match_score: number };
 
 export async function getComparisonBySlug(slug: string): Promise<ComparisonRecord | null> {
   const db = getDb();
@@ -102,9 +99,13 @@ export async function getComparisonBySlug(slug: string): Promise<ComparisonRecor
   return (rows[0] ?? null) as unknown as ComparisonRecord | null;
 }
 
-export async function getAlternatives(slug: string): Promise<{ product: ProductRecord | null; alternatives: Array<ProductRecord & { match_score: number }> }> {
+export type AlternativeProduct = ProductRecord & { match_score: number };
+type AlternativeRow = { product: ProductRecord; match_score: number };
+
+export async function getAlternatives(slug: string): Promise<{ product: ProductRecord | null; alternatives: AlternativeProduct[] }> {
   const db = getDb();
   if (!db) return { product: null, alternatives: [] };
+
   const rows = await db`
     WITH target AS (SELECT * FROM products WHERE slug = ${slug} AND status = 'active' LIMIT 1)
     SELECT json_build_object('slug', t.slug, 'title', t.title, 'model', t.model, 'brand_name', bt.name,
@@ -124,7 +125,11 @@ export async function getAlternatives(slug: string): Promise<{ product: ProductR
     WHERE p.indexable = true
     ORDER BY match_score DESC, p.quality_score DESC NULLS LAST LIMIT 12
   `;
+
   const typedRows = rows as unknown as AlternativeRow[];
   const target = typedRows[0]?.product ?? null;
-  return { product: target, alternatives: typedRows.map((x) => ({ ...x.product, match_score: x.match_score })) };
+  return {
+    product: target,
+    alternatives: typedRows.map((x) => ({ ...x.product, match_score: x.match_score })),
+  };
 }
