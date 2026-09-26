@@ -27,12 +27,20 @@ export default function HomePage() {
             <div className="eyebrow"><span className="live-dot" /> PRODUCT INTELLIGENCE</div>
             <h1>Find an air fryer that actually fits your kitchen.</h1>
             <p className="hero-copy">Search real models, compare specifications, check identifiers, and find current retailer options — without the filler.</p>
-            <form action="/search" className="search-box">
+            <form action="/search" method="get" className="search-box">
               <span className="search-icon">⌕</span>
-              <input name="q" required placeholder="Search model, brand, UPC, EAN…" />
-              <button>Search</button>
+              <input
+                type="search"
+                name="q"
+                required
+                minLength={2}
+                autoComplete="off"
+                aria-label="Search air fryers"
+                placeholder="Search model, UPC, EAN, ASIN, or brand…"
+              />
+              <button type="submit">Search</button>
             </form>
-            <div className="quick-links"><span>Popular:</span><Link href="/search?q=Ninja+AF141">Ninja AF141</Link><Link href="/search?q=Cosori+CP158">Cosori CP158</Link><Link href="/search?q=8+quart">8 quart</Link></div>
+            <div className="quick-links"><span>Try:</span><Link href="/search?q=Ninja+AF141">Ninja AF141</Link><Link href="/search?q=Cosori">Cosori</Link><Link href="/search?q=dual+basket">Dual basket</Link></div>
           </div>
           <div className="hero-card">
             <div className="hero-card-top"><span>DATA-FIRST</span><span>01</span></div>
