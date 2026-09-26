@@ -68,6 +68,22 @@ async function insertProduct(p: RawProduct, brandId: number): Promise<number> {
   const wattage = p.wattage ?? extractWattage(p.features, p.title);
   const weight = parseWeight(p.weight);
 
+  // Index only records that pass the minimum identity/completeness gate.
+  // Affiliate offers are intentionally not part of this gate.
+  const hasIdentifier = Boolean(p.asin || p.upc || p.ean);
+  const qualityScore = Math.min(
+    100,
+    Math.round(
+      (p.images?.length ? 20 : 0) +
+      (model ? 20 : 0) +
+      (hasIdentifier ? 30 : 0) +
+      (p.brand ? 15 : 0) +
+      (wattage || capacityQuart ? 10 : 0) +
+      (p.features?.length ? 5 : 0),
+    ),
+  );
+  const indexable = qualityScore >= 70 && hasIdentifier && Boolean(model) && Boolean(p.brand);
+
   const rows = await sql`
     INSERT INTO products (
       slug, brand_id, model, title, capacity_quart, capacity_liters, wattage,
@@ -78,8 +94,7 @@ async function insertProduct(p: RawProduct, brandId: number): Promise<number> {
       ${capacityQuart}, ${p.capacity_liters ?? null}, ${wattage},
       ${dimensions ? JSON.stringify(dimensions) : null}::jsonb, ${weight},
       'active', 'draft', 'source', NULL, false, false,
-      ${Math.min(100, Math.round((p.images?.length ? 20 : 0) + (model ? 20 : 0) + (p.asin || p.upc || p.ean ? 30 : 0) + (p.brand ? 15 : 0) + (wattage || capacityQuart ? 15 : 0)))},
-      false
+      ${qualityScore}, ${indexable}
     )
     RETURNING id
   `;
