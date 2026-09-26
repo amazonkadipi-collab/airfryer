@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/apify-start",
+      "schedule": "15 3 * * *"
+    }
+  ]
+}
