@@ -1,4 +1,64 @@
 import type { Metadata } from "next";
 import "./globals.css";
-export const metadata: Metadata = { metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://airfryer.vercel.app"), title: { default: "Air Fryer Product Intelligence", template: "%s | Air Fryer" }, description: "Search, compare, and discover air fryers using structured product data, identifiers, features, and retailer information.", robots: { index: true, follow: true } };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body>{children}</body></html>; }
+
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://airfryer1.vercel.app";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "Air Fryer Intelligence — Search, Compare & Buy Air Fryers",
+    template: "%s | Air Fryer Intelligence",
+  },
+  description:
+    "Search air fryers by model, UPC, EAN or ASIN. Compare specifications, identifiers, features, and trusted retailer offers.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Air Fryer Intelligence",
+    url: baseUrl,
+    title: "Air Fryer Intelligence — Search, Compare & Buy Air Fryers",
+    description:
+      "Search air fryers by model, UPC, EAN or ASIN. Compare specifications, identifiers, features, and trusted retailer offers.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Air Fryer Intelligence",
+    description:
+      "Search air fryers by model, UPC, EAN or ASIN.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Air Fryer Intelligence",
+  url: baseUrl,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${baseUrl}/search?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en">
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {children}
+      </body>
+    </html>
+  );
+}
