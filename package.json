@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "fetch:apify": "tsx scripts/fetch-apify.ts",
+    "adapt:apify": "tsx scripts/adapt-apify.ts",
+    "ingest": "tsx scripts/ingest.ts",
+    "validate": "tsx scripts/validate.ts",
+    "dedupe": "tsx scripts/dedupe.ts"
   },
   "dependencies": {
     "next": "15.5.26",
