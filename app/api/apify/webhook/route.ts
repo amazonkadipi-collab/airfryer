@@ -140,7 +140,7 @@ export async function POST(request: Request) {
       const validation = validateProduct(product);
       if (!validation.valid) { stats.invalid++; continue; }
       const duplicate = await findDuplicate(sql, product);
-      if (duplicate.isDuplicate) { stats.duplicate++; continue; }
+      if (duplicate) { stats.duplicate++; continue; }
 
       const brand = (product.brand || "Unknown").trim();
       const brandSlug = slugify(brand) || "unknown";
