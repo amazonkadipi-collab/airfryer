@@ -1,8 +1,25 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://airfryer1.vercel.app";
+const FALLBACK_SITE_URL = "https://airfryer1.vercel.app";
+
+function getBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+  if (!configured) return FALLBACK_SITE_URL;
+
+  try {
+    const url = new URL(
+      /^https?:\/\//i.test(configured) ? configured : `https://${configured}`,
+    );
+
+    return url.origin;
+  } catch {
+    return FALLBACK_SITE_URL;
+  }
+}
+
+const baseUrl = getBaseUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
