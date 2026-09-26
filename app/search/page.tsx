@@ -23,7 +23,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <section className="section"><div className="shell">
       <span className="eyebrow">SEARCH</span><h1 className="page-title">Search the product database.</h1>
       <p className="page-lead">Search by model, brand, UPC, EAN, ASIN, MPN or product title. Exact identifiers take priority over fuzzy matches.</p>
-      <form action="/search" className="search-box"><span className="search-icon">⌕</span><input name="q" defaultValue={query} placeholder="Ninja AF141, UPC, EAN…" /><button>Search</button></form>
+      <form action="/search" method="get" className="search-box"><span className="search-icon">⌕</span><input type="search" name="q" defaultValue={query} required minLength={2} autoComplete="off" aria-label="Search air fryers" placeholder="Search model, UPC, EAN, ASIN, or brand…" /><button type="submit">Search</button></form>
       <div className="quick-links"><span>Try:</span>{suggestions.map(x=><Link key={x} href={`/search?q=${encodeURIComponent(x)}`}>{x}</Link>)}</div>
       {query && results.length > 0 ? <div className="brand-list">
         {results.map((product) => <Link className="brand-row" key={product.slug} href={`/products/${product.slug}`}>
