@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://airfryer.vercel.app";
-  return { rules: { userAgent: "*", allow: "/" }, sitemap: `${base}/sitemap.xml` };
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://airfryer1.vercel.app";
+  return { rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/search", "/go/", "/admin/"] }], sitemap: `${baseUrl}/sitemap.xml`, host: baseUrl };
 }
