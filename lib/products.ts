@@ -106,30 +106,32 @@ export async function getAlternatives(slug: string): Promise<{ product: ProductR
   const db = getDb();
   if (!db) return { product: null, alternatives: [] };
 
+  const product = await getProductBySlug(slug);
+  if (!product) return { product: null, alternatives: [] };
+
   const rows = await db`
     WITH target AS (SELECT * FROM products WHERE slug = ${slug} AND status = 'active' LIMIT 1)
-    SELECT json_build_object('slug', t.slug, 'title', t.title, 'model', t.model, 'brand_name', bt.name,
-      'capacity_quart', t.capacity_quart, 'quality_score', t.quality_score, 'description', t.description,
-      'capacity_liters', t.capacity_liters, 'wattage', t.wattage, 'basket_type', t.basket_type,
-      'basket_count', t.basket_count, 'dishwasher_safe', t.dishwasher_safe, 'rotisserie', t.rotisserie,
-      'digital_controls', t.digital_controls, 'temperature_min', t.temperature_min, 'temperature_max', t.temperature_max,
-      'dimensions', t.dimensions, 'weight', t.weight, 'indexable', t.indexable) AS product,
+    SELECT json_build_object('slug', p.slug, 'title', p.title, 'model', p.model, 'brand_name', bp.name,
+      'capacity_quart', p.capacity_quart, 'quality_score', p.quality_score, 'description', p.description,
+      'capacity_liters', p.capacity_liters, 'wattage', p.wattage, 'basket_type', p.basket_type,
+      'basket_count', p.basket_count, 'dishwasher_safe', p.dishwasher_safe, 'rotisserie', p.rotisserie,
+      'digital_controls', p.digital_controls, 'temperature_min', p.temperature_min, 'temperature_max', p.temperature_max,
+      'dimensions', p.dimensions, 'weight', p.weight, 'indexable', p.indexable) AS product,
       (CASE WHEN t.brand_id = p.brand_id THEN 10 ELSE 0 END +
        CASE WHEN t.capacity_quart IS NOT NULL AND p.capacity_quart IS NOT NULL
          THEN greatest(0, 20 - abs(t.capacity_quart - p.capacity_quart) * 5) ELSE 0 END +
        CASE WHEN t.basket_type IS NOT NULL AND t.basket_type = p.basket_type THEN 15 ELSE 0 END +
        CASE WHEN t.basket_count IS NOT NULL AND t.basket_count = p.basket_count THEN 10 ELSE 0 END +
        CASE WHEN t.dishwasher_safe IS NOT NULL AND t.dishwasher_safe = p.dishwasher_safe THEN 5 ELSE 0 END) AS match_score
-    FROM target t JOIN products p ON p.id <> t.id AND p.status = 'active'
-    LEFT JOIN brands bt ON bt.id = t.brand_id
+    FROM target t JOIN products p ON p.slug <> ${slug} AND p.status = 'active'
+    LEFT JOIN brands bp ON bp.id = p.brand_id
     WHERE p.indexable = true
     ORDER BY match_score DESC, p.quality_score DESC NULLS LAST LIMIT 12
   `;
 
   const typedRows = rows as unknown as AlternativeRow[];
-  const target = typedRows[0]?.product ?? null;
   return {
-    product: target,
+    product,
     alternatives: typedRows.map((x) => ({ ...x.product, match_score: x.match_score })),
   };
 }
