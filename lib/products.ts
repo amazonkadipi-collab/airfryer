@@ -64,7 +64,20 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
   return rows[0] ?? null;
 }
 
-export async function getComparisonBySlug(slug: string) {
+
+export type ComparisonProduct = ProductRecord;
+export type ComparisonRecord = {
+  slug: string;
+  status: string;
+  search_demand: number | null;
+  quality_score: number | null;
+  a: ComparisonProduct;
+  b: ComparisonProduct;
+};
+
+type AlternativeRow = { product: ProductRecord; match_score: number };
+
+export async function getComparisonBySlug(slug: string): Promise<ComparisonRecord | null> {
   const db = getDb();
   if (!db) return null;
   const rows = await db`
@@ -86,10 +99,10 @@ export async function getComparisonBySlug(slug: string) {
     LEFT JOIN brands ba ON ba.id = a.brand_id LEFT JOIN brands bb ON bb.id = b.brand_id
     WHERE c.slug = ${slug} LIMIT 1
   `;
-  return rows[0] ?? null;
+  return (rows[0] ?? null) as unknown as ComparisonRecord | null;
 }
 
-export async function getAlternatives(slug: string) {
+export async function getAlternatives(slug: string): Promise<{ product: ProductRecord | null; alternatives: Array<ProductRecord & { match_score: number }> }> {
   const db = getDb();
   if (!db) return { product: null, alternatives: [] };
   const rows = await db`
@@ -111,6 +124,7 @@ export async function getAlternatives(slug: string) {
     WHERE p.indexable = true
     ORDER BY match_score DESC, p.quality_score DESC NULLS LAST LIMIT 12
   `;
-  const target = rows[0]?.product ?? null;
-  return { product: target, alternatives: rows.map(x => ({...x.product, match_score:x.match_score})) };
+  const typedRows = rows as unknown as AlternativeRow[];
+  const target = typedRows[0]?.product ?? null;
+  return { product: target, alternatives: typedRows.map((x) => ({ ...x.product, match_score: x.match_score })) };
 }
