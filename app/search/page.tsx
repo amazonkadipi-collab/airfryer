@@ -1,4 +1,11 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Search",
+  description: "Search the Air Fryer product database by model, brand, UPC, EAN, ASIN, MPN or product title.",
+  robots: { index: false, follow: true },
+};
 import { searchProducts } from "@/lib/products";
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
