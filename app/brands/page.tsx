@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Air Fryer Brands",
   description: "Explore air fryer brands and the product models currently in the catalog.",
   alternates: { canonical: "/brands" },
+  openGraph: { url: "/brands", type: "website" },
 };
 
 export default async function BrandsPage() {
