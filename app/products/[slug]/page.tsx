@@ -51,7 +51,7 @@ export default async function ProductPage({ params }: Props) {
       <div className="product-grid">
         <div className="product-visual"><span className="eyebrow">PRODUCT RECORD</span><div className="product-placeholder"><span>AF</span><small>Image shown only when a licensed source is available.</small></div></div>
         <div className="product-copy"><span className="eyebrow">{product.brand_name ?? "BRAND UNVERIFIED"}</span><h1>{product.title}</h1>
-          <p>{product.description ?? "Structured product information sourced from the verified catalog."}</p>
+          <p>{product.description ?? "Structured product information from the current catalog record."}</p>
           <div className="identifier-box"><b>MODEL</b><span>{value(product.model)}</span><small>Identifiers are displayed only when verified in the catalog.</small></div>
           <div className="action-row"><Link href="/search" className="button dark">Find another model</Link><Link href="/compare" className="button light">Compare products</Link></div>
         </div>
@@ -60,7 +60,7 @@ export default async function ProductPage({ params }: Props) {
     <section className="section"><div className="shell">
       <div className="section-head"><div><span className="eyebrow">PRODUCT DETAILS</span><h2>Structured information</h2></div></div>
       <div className="spec-table">{fields.map(([label, v]) => <div key={label}><b>{label}</b><span>{value(v)}</span></div>)}</div>
-      <p className="narrow-copy">Specifications are presented from stored product records. Missing values are not inferred or generated.</p>
+      <p className="narrow-copy">Specifications are presented from stored catalog records. Missing values are not inferred or generated.</p>
     </div></section>
   </main>;
 }
