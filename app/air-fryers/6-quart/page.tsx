@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "6-Quart Air Fryers",
   description: "Explore 6-quart air fryers and compare capacity, basket type, power and verified product data.",
   alternates: { canonical: "/air-fryers/6-quart" },
+  openGraph: { url: "/air-fryers/6-quart", type: "website" },
 };
 
 export default async function SixQuartPage() {
