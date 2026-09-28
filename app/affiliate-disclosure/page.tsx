@@ -4,6 +4,8 @@ export const metadata = {
   title: "Affiliate Disclosure",
   description: "Affiliate disclosure for Air Fryer.",
   robots: { index: true, follow: true },
+  alternates: { canonical: "/affiliate-disclosure" },
+  openGraph: { url: "/affiliate-disclosure", type: "website" },
 };
 
 export default function Page() {
