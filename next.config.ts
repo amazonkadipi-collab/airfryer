@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "mobileimages.lowes.com" },
       { protocol: "https", hostname: "cosori.com" },
       { protocol: "https", hostname: "instantpot.com" },
+      { protocol: "https", hostname: "djd1xqjx2kdnv.cloudfront.net" },
+      { protocol: "https", hostname: "smartmag.biz.ua" },
+      { protocol: "https", hostname: "www.cuisinart.ca" },
+      { protocol: "https", hostname: "i.ebayimg.com" },
     ],
   },
 };
