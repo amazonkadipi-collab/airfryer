@@ -6,8 +6,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const ACTOR = process.env.APIFY_ACTOR ?? "epctex~amazon-scraper";
-
 async function findDuplicate(sql: ReturnType<typeof neon>, p: RawProduct): Promise<boolean> {
   const identifiers = [["ASIN", p.asin?.trim().toUpperCase()], ["UPC", p.upc?.replace(/\D/g, "")], ["EAN", p.ean?.replace(/\D/g, "")]].filter((x): x is [string, string] => Boolean(x[1]));
   for (const [type, value] of identifiers) {
@@ -21,12 +19,6 @@ async function findDuplicate(sql: ReturnType<typeof neon>, p: RawProduct): Promi
   return false;
 }
 
-function siteUrl() {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured) { try { return new URL(/^https?:\/\//i.test(configured) ? configured : `https://${configured}`).origin; } catch {} }
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://airfryer1.vercel.app";
-}
 function slugify(value: string) { return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70); }
 function adapt(raw: Record<string, unknown>): RawProduct | null {
   const pick = (...keys: string[]) => keys.map(k => raw[k]).find(v => v !== undefined && v !== null && v !== "");
