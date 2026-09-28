@@ -10,7 +10,7 @@ import { getCatalogImage, getCatalogSource } from "@/lib/product-images";
 
 type Props = { params: Promise<{ slug: string }> };
 
-function value(v: unknown) {
+function formatDimensions(v: unknown) {\n  if (!v || typeof v !== "object") return String(v);\n  const d = v as Record<string, unknown>;\n  if (d.width_in && d.depth_in && d.height_in) return `${d.width_in}" W × ${d.depth_in}" D × ${d.height_in}" H`;\n  return String(v);\n}\n\nfunction value(v: unknown) {
   if (v === null || v === undefined || v === "") return "Not verified";
   if (typeof v === "boolean") return v ? "Yes" : "No";
   return String(v);
