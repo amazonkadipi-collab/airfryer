@@ -12,6 +12,7 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "chefman-turbofry-6-quart": "https://i5.walmartimages.com/seo/Chefman-TurboFry-6-Quart-Digital-Air-Fryer-Touch-Controls-w-5-Cooking-Functions-Stainless-Steel_f502223c-b095-4fb9-b6f5-44b3a0eacfab.4781b400a20b506d0c75373e189a2cd3.jpeg?odnBg=FFFFFF&odnHeight=768&odnWidth=768",
 };
 
-export function getCatalogImage(slug: string, imageUrl?: string | null) {
+const PRODUCT_SOURCES: Record<string, string> = {\n  "instant-vortex-plus-clearcook-6-quart": "https://instantpot.com/products/instant-pot-vortex-plus-6qt-clearcook-air-fryer",\n};\n\nexport function getCatalogImage(slug: string, imageUrl?: string | null) {
   return imageUrl || PRODUCT_IMAGES[slug] || null;
 }
+\nexport function getCatalogSource(slug: string) {\n  return PRODUCT_SOURCES[slug] || null;\n}\n
