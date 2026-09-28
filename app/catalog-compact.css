@@ -1,15 +1,29 @@
-/* Compact catalog layer: intentionally keeps the whole shopping experience dense. */
-.product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
-.card__media{aspect-ratio:1/.72!important}
-.card__media img{padding:.25rem!important}
-.card__body{padding:6px 7px 7px!important;gap:2px!important}
-.card__brand{font-size:.57rem!important}
-.card__title{font-size:.77rem!important;line-height:1.22!important}
-.card__specs{font-size:.63rem!important}
-.card__link{font-size:.61rem!important;margin-top:2px!important}
-.section{padding-block:1.8rem!important}
-.section-head{margin-bottom:12px!important}
+/* Global compact layer — keeps every page dense, polished and easy to scan. */
 .shell{max-width:1280px!important;padding-inline:10px!important}
-@media(min-width:600px){.product-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}}
-@media(min-width:1100px){.product-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px!important}.card__media{aspect-ratio:1/.66!important}.card__media img{padding:.15rem!important}.card__title{font-size:.74rem!important}}
-@media(max-width:480px){.product-grid{gap:6px!important}.card__media{aspect-ratio:1/.72!important}.card__media img{padding:.12rem!important}.card__body{padding:5px!important}.card__title{font-size:.72rem!important}.card__specs{font-size:.58rem!important}.card__link{font-size:.56rem!important}}
+.section{padding-block:1.75rem!important}
+.section-head{margin-bottom:12px!important}
+.site-header{height:54px!important}
+.nav{gap:10px!important}.nav nav{gap:13px!important;font-size:.76rem!important}.brand{font-size:.82rem!important}.brand-mark{width:28px!important;height:28px!important}.nav-cta{padding:.5rem .72rem!important;font-size:.72rem!important}
+.hero{padding-block:2.8rem 2.2rem!important}.hero__title{font-size:clamp(2rem,5vw,3.5rem)!important}.hero__sub{margin-top:8px!important;font-size:.88rem!important}.hero__search{margin-top:14px!important}.search-box{margin-top:12px!important;max-width:600px!important}.search-box input{padding:.72rem .9rem!important;font-size:.84rem!important}.search-box button{padding:.65rem 1rem!important;font-size:.8rem!important}.quick-links{margin-top:6px!important;font-size:.7rem!important;gap:8px!important}
+.product-grid,.capacity-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+.card{border-radius:13px!important;box-shadow:0 2px 9px rgba(78,52,48,.035)!important}.card:hover{transform:translateY(-2px)!important;box-shadow:0 8px 18px rgba(78,52,48,.07)!important}
+.card__media{aspect-ratio:1/.70!important}.card__media img{padding:.2rem!important}.card__body{padding:6px 7px 7px!important;gap:2px!important}.card__brand{font-size:.56rem!important}.card__title{font-size:.76rem!important;line-height:1.2!important}.card__specs{font-size:.62rem!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.card__link{font-size:.59rem!important;margin-top:2px!important}
+.capacity-card{min-height:88px!important;padding:10px!important;border-radius:13px!important}.capacity-card strong{font-size:.88rem!important}.capacity-card span{font-size:.68rem!important}.capacity-card i{font-size:.63rem!important}
+.filter-grid{gap:7px!important;margin-top:1.25rem!important}.filter-card{min-height:78px!important;padding:9px!important;border-radius:13px!important}.filter-card strong{font-size:.82rem!important}.filter-card span{font-size:.65rem!important}
+.brand-list{margin-top:1.25rem!important}.brand-row{padding:.8rem 0!important;grid-template-columns:42px 1fr auto!important}.brand-row strong{font-size:.88rem!important}.brand-row small,.brand-row>span:last-child{font-size:.64rem!important}
+.page-title{font-size:clamp(1.9rem,5vw,3.2rem)!important;margin:.65rem 0!important}.page-lead{font-size:.86rem!important;margin-bottom:1.25rem!important;line-height:1.5!important}.breadcrumb{font-size:.64rem!important;padding:7px 0!important}
+/* Product detail: reduce the oversized visual and whitespace on desktop. */
+.product-hero{padding-bottom:1.75rem!important}.product-grid{gap:18px!important}
+@media(min-width:768px){.product-grid{grid-template-columns:minmax(0,.82fr) minmax(0,1fr)!important;gap:24px!important}.product-image{max-height:430px!important;aspect-ratio:1/.78!important}.product-image img{padding:.55rem!important}.product-copy>p{font-size:.86rem!important;margin-top:.65rem!important}.product-hero__model{font-size:.7rem!important}.quick-specs{margin-top:.8rem!important;gap:6px!important}.quick-specs__item{padding:6px!important}.quick-specs__label{font-size:.57rem!important}.quick-specs__value{font-size:.72rem!important}}
+.quick-specs{gap:6px!important}.quick-specs__item{padding:7px!important}.quick-specs__label{font-size:.6rem!important}.quick-specs__value{font-size:.76rem!important}
+.action-row{gap:5px!important;margin-top:1rem!important}.cta,.button{margin-top:1rem!important;padding:.62rem .9rem!important;font-size:.76rem!important;border-radius:10px!important}
+.spec-table{font-size:.78rem!important}.spec-table div{padding:.65rem .75rem!important}
+.identifiers{gap:4px!important}.identifiers__item{padding:.38rem .55rem!important;font-size:.65rem!important}
+.retailer-list{gap:4px!important}.retailer-link{padding:.7rem!important;border-radius:10px!important}.retailer-link__name{font-size:.8rem!important}.retailer-link__price{font-size:.72rem!important}.retailer-link__cta{font-size:.65rem!important}
+.compare-select{gap:.65rem!important;margin:1.25rem 0!important}.compare-select>div{padding:1rem!important;border-radius:14px!important}.search-state{margin-top:1.25rem!important;padding:1.25rem!important;gap:1rem!important}
+.site-footer,footer{margin-top:2rem!important;padding-block:1.25rem!important;font-size:.68rem!important}.footer{gap:.75rem!important}.footer>div{gap:.7rem!important}
+/* Large desktop: six compact cards across the catalogue, small product imagery. */
+@media(min-width:600px){.product-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}.capacity-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}}
+@media(min-width:1100px){.product-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px!important}.capacity-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px!important}.card__media{aspect-ratio:1/.64!important}.card__media img{padding:.08rem!important}.card__title{font-size:.72rem!important}.card__specs{font-size:.59rem!important}.card__body{padding:5px 6px 6px!important}.card__brand{font-size:.53rem!important}.card__link{font-size:.56rem!important}.capacity-card{min-height:82px!important;padding:9px!important}}
+@media(min-width:1400px){.shell{max-width:1340px!important}.product-grid{grid-template-columns:repeat(7,minmax(0,1fr))!important}.capacity-grid{grid-template-columns:repeat(7,minmax(0,1fr))!important}}
+@media(max-width:480px){.shell{padding-inline:8px!important}.section{padding-block:1.35rem!important}.hero{padding-block:2.3rem 1.8rem!important}.product-grid{gap:5px!important}.card{border-radius:11px!important}.card__media{aspect-ratio:1/.70!important}.card__media img{padding:.08rem!important}.card__body{padding:5px!important}.card__title{font-size:.69rem!important}.card__specs{font-size:.56rem!important}.card__brand{font-size:.5rem!important}.card__link{font-size:.54rem!important}.capacity-grid{gap:5px!important}.capacity-card{min-height:78px!important;padding:8px!important}.filter-grid{gap:5px!important}.filter-card{padding:8px!important;min-height:72px!important}.product-image{aspect-ratio:1/.78!important}.product-image img{padding:.45rem!important}.quick-specs{gap:5px!important}.quick-specs__item{padding:6px!important}}
