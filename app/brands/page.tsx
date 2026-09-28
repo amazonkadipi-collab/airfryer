@@ -33,7 +33,6 @@ export default async function BrandsPage() {
           ))}
         </div>
       </div></section>
-      <footer><div className="shell footer"><span>Product intelligence for better decisions.</span><div><Link href="/about">About</Link><Link href="/how-we-rank">How we rank</Link><Link href="/affiliate-disclosure">Affiliate Disclosure</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></div></div></footer>
     </main>
   );
 }
