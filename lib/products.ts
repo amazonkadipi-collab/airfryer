@@ -8,6 +8,9 @@ export type ProductSearchRow = {
   brand_name: string | null;
   capacity_quart: number | null;
   quality_score: number | null;
+  basket_type?: string | null;
+  basket_count?: number | null;
+  digital_controls?: boolean | null;
   image_url?: string | null;
 };
 
@@ -49,7 +52,7 @@ export async function getFeaturedProducts(limit = 12): Promise<ProductSearchRow[
   const db = getDb();
   if (!db) return [];
   const rows = await db`
-    SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
+    SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score, p.basket_type, p.basket_count, p.digital_controls,
       (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url
     FROM products p
     LEFT JOIN brands b ON b.id = p.brand_id
