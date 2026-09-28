@@ -25,6 +25,18 @@ export type ProductRecord = ProductSearchRow & {
   indexable: boolean;
 };
 
+export async function getBrands(): Promise<Array<{ slug: string; name: string; product_count: number }>> {
+  const db = getDb();
+  if (!db) return [];
+  const rows = await db`
+    SELECT b.slug, b.name, COUNT(p.id)::int AS product_count
+    FROM brands b
+    LEFT JOIN products p ON p.brand_id = b.id AND p.status = 'active'
+    GROUP BY b.id, b.slug, b.name
+    ORDER BY COUNT(p.id) DESC, b.name ASC
+  `;
+  return rows as unknown as Array<{ slug: string; name: string; product_count: number }>;
+}
 export async function getFeaturedProducts(limit = 12): Promise<ProductSearchRow[]> {
   const db = getDb();
   if (!db) return [];
