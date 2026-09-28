@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description: "Search the Air Fryer product database by model, brand, UPC, EAN, ASIN, MPN or product title.",
   robots: { index: false, follow: true },
   alternates: { canonical: "/search" },
+  openGraph: { url: "/search", type: "website" },
 };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
