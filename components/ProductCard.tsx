@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getCatalogImage } from "@/lib/product-images";
 
 export interface ProductCardData {
   id: number | string;
@@ -19,12 +20,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     product.basket_type,
   ].filter(Boolean);
 
+  const imageUrl = getCatalogImage(product.slug, product.image_url);
+
   return (
     <Link href={`/products/${product.slug}`} className="card">
       <div className="card__media">
-        {product.image_url ? (
+        {imageUrl ? (
           <Image
-            src={product.image_url}
+            src={imageUrl}
             alt={product.title}
             width={400}
             height={400}
