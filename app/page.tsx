@@ -1,105 +1,120 @@
 import Link from "next/link";
-import { getFeaturedProducts } from "@/lib/products";
+import { ProductCard } from "@/components/ProductCard";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
+import { getBrands, getFeaturedProducts } from "@/lib/products";
 
 const capacities = [
-  ["Compact", "Under 4 qt"],
-  ["4 Quart", "Everyday cooking"],
-  ["6 Quart", "Most households"],
-  ["8 Quart", "Family size"],
-  ["10+ Quart", "Large batches"],
+  ["4 qt", "Compact everyday use"],
+  ["5 qt", "Balanced capacity"],
+  ["6 qt", "Most households"],
+  ["8 qt", "Family-size cooking"],
+  ["10+ qt", "Large batches"],
 ];
-const uses = ["1 person", "2 people", "Families", "Small kitchen", "Large family"];
-const brands = ["Ninja", "Cosori", "Instant", "Philips", "Chefman", "Cuisinart"];
 
 export default async function HomePage() {
-  const featuredProducts = await getFeaturedProducts(6);
+  const [products, brands] = await Promise.all([
+    getFeaturedProducts(8),
+    getBrands(),
+  ]);
+
   return (
     <main>
-      <header className="site-header">
-        <div className="shell nav">
-          <Link href="/" className="brand"><span className="brand-mark">AF</span><span>Air Fryer</span></Link>
-          <nav><Link href="/air-fryers">Browse</Link><Link href="/brands">Brands</Link><Link href="/search">Search</Link></nav>
-          <Link href="/search" className="nav-cta">Find an air fryer</Link>
-        </div>
-      </header>
-
+      <SiteHeader />
       <section className="hero">
-        <div className="shell hero-grid">
-          <div>
-            <div className="eyebrow"><span className="live-dot" /> PRODUCT INTELLIGENCE</div>
-            <h1>Find an air fryer that actually fits your kitchen.</h1>
-            <p className="hero-copy">Search real models, compare specifications, check identifiers, and find current retailer options — without the filler.</p>
-            <form action="/search" method="get" className="search-box">
-              <span className="search-icon">⌕</span>
-              <input
-                type="search"
-                name="q"
-                required
-                minLength={2}
-                autoComplete="off"
-                aria-label="Search air fryers"
-                placeholder="Search model, UPC, EAN, ASIN, or brand…"
-              />
-              <button type="submit">Search</button>
-            </form>
-            <div className="quick-links"><span>Try:</span><Link href="/search?q=Ninja+AF141">Ninja AF141</Link><Link href="/search?q=Cosori">Cosori</Link><Link href="/search?q=dual+basket">Dual basket</Link></div>
+        <div className="shell">
+          <span className="eyebrow"><span className="live-dot" /> PRODUCT INTELLIGENCE</span>
+          <h1 className="hero__title">Find the right air fryer.</h1>
+          <p className="hero__sub">
+            Search real models, compare specifications, and check product identifiers.
+            No filler. No invented data.
+          </p>
+          <form action="/search" method="get" className="search-box hero__search">
+            <input
+              type="search"
+              name="q"
+              required
+              minLength={2}
+              autoComplete="off"
+              aria-label="Search air fryers"
+              placeholder="Model, brand, ASIN, UPC or EAN"
+            />
+            <button type="submit">Search</button>
+          </form>
+          <div className="quick-links">
+            <span>Try:</span>
+            <Link href="/search?q=Ninja+AF141">Ninja AF141</Link>
+            <Link href="/search?q=Cosori">Cosori</Link>
+            <Link href="/search?q=dual+basket">Dual basket</Link>
           </div>
-          <div className="hero-card">
-            <div className="hero-card-top"><span>DATA-FIRST</span><span>01</span></div>
-            <div className="air-icon">◉</div>
-            <h2>One place for the details that matter.</h2>
-            <div className="spec-list"><div><b>MODEL</b><span>Exact identity</span></div><div><b>SPECS</b><span>Structured data</span></div><div><b>RETAILERS</b><span>Current availability</span></div></div>
+        </div>
+      </section>
+
+      {products.length > 0 && (
+        <section className="section">
+          <div className="shell">
+            <div className="section-head">
+              <div><span className="eyebrow">POPULAR MODELS</span><h2>Air fryers worth identifying</h2></div>
+              <Link href="/air-fryers">Browse all →</Link>
+            </div>
+            <div className="product-grid">
+              {products.map((product) => <ProductCard key={product.slug} product={product} />)}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="section">
         <div className="shell">
-          <div className="section-head"><div><span className="eyebrow">EXPLORE</span><h2>Shop by capacity</h2></div><Link href="/air-fryers">View all →</Link></div>
-          <div className="capacity-grid">{capacities.map(([name, sub]) => <Link href="/air-fryers" className="capacity-card" key={name}><strong>{name}</strong><span>{sub}</span><i>→</i></Link>)}</div>
-        </div>
-      </section>
-
-      <section className="section soft">
-        <div className="shell">
-          <div className="section-head"><div><span className="eyebrow">BUILT FOR REAL USE</span><h2>Find by how you cook</h2></div></div>
-          <div className="use-grid">{uses.map(x => <Link href="/air-fryers" className="use-card" key={x}><span>↗</span>{x}</Link>)}</div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="shell">
-          <div className="section-head"><div><span className="eyebrow">BRANDS</span><h2>Explore popular brands</h2></div><Link href="/brands">All brands →</Link></div>
-          <div className="brand-grid">{brands.map(x => <Link href="/brands" key={x} className="brand-pill">{x}<span>→</span></Link>)}</div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="shell">
-          <div className="section-head"><div><span className="eyebrow">LIVE CATALOG</span><h2>Featured air fryers</h2></div><Link href="/air-fryers">View all →</Link></div>
+          <div className="section-head">
+            <div><span className="eyebrow">EXPLORE</span><h2>Browse by capacity</h2></div>
+          </div>
           <div className="capacity-grid">
-            {featuredProducts.map(product => (
-              <Link href={`/products/${product.slug}`} className="capacity-card" key={product.slug}>
-                <span className="eyebrow">{product.brand_name ?? "Brand"}</span>
-                <strong>{product.title}</strong>
-                <span>{product.capacity_quart ? `${product.capacity_quart} qt` : "Capacity not verified"}</span>
-                <i>View product →</i>
+            {capacities.map(([label, description]) => (
+              <Link href={`/search?q=${encodeURIComponent(label)}`} className="capacity-card" key={label}>
+                <strong>{label}</strong>
+                <span>{description}</span>
+                <i>Explore models →</i>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="trust">
-        <div className="shell trust-grid">
-          <div><span className="eyebrow">WHY AIR FRYER</span><h2>Useful information.<br/>No invented specs.</h2></div>
-          <div className="trust-item"><b>01</b><strong>Product identity</strong><p>Model, UPC, EAN, ASIN and MPN matching.</p></div>
-          <div className="trust-item"><b>02</b><strong>Clear comparisons</strong><p>See meaningful differences between similar models.</p></div>
-          <div className="trust-item"><b>03</b><strong>Retailer context</strong><p>Prices and availability only when current data is available.</p></div>
+      {brands.length > 0 && (
+        <section className="section">
+          <div className="shell">
+            <div className="section-head">
+              <div><span className="eyebrow">BRANDS</span><h2>Explore manufacturers</h2></div>
+              <Link href="/brands">All brands →</Link>
+            </div>
+            <div className="product-grid">
+              {brands.slice(0, 8).map((brand) => (
+                <Link href={`/search?q=${encodeURIComponent(brand.name)}`} className="capacity-card" key={brand.slug}>
+                  <strong>{brand.name}</strong>
+                  <span>{brand.product_count} {brand.product_count === 1 ? "model" : "models"} in catalog</span>
+                  <i>View models →</i>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="section">
+        <div className="shell">
+          <div className="section-head">
+            <div><span className="eyebrow">HOW IT WORKS</span><h2>Google search → product intelligence</h2></div>
+          </div>
+          <div className="product-grid">
+            <div className="empty-panel"><span className="eyebrow">01 IDENTIFY</span><h2>Find the exact model.</h2><p>Search by model, title, brand, or verified product identifier.</p></div>
+            <div className="empty-panel"><span className="eyebrow">02 UNDERSTAND</span><h2>Read the useful specs.</h2><p>Capacity, basket configuration, power and other stored fields are shown clearly.</p></div>
+            <div className="empty-panel"><span className="eyebrow">03 COMPARE</span><h2>Choose with context.</h2><p>Use similar models and retailer information when reliable data is available.</p></div>
+          </div>
         </div>
       </section>
 
-      <footer><div className="shell footer"><Link href="/" className="brand"><span className="brand-mark">AF</span><span>Air Fryer</span></Link><span>Product intelligence for better decisions.</span><div><Link href="/air-fryers">Browse</Link><Link href="/brands">Brands</Link><Link href="/search">Search</Link><Link href="/about">About</Link><Link href="/how-we-rank">How we rank</Link><Link href="/affiliate-disclosure">Affiliate Disclosure</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></div></div></footer>
+      <SiteFooter />
     </main>
   );
 }
