@@ -1,9 +1,11 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getBrands } from "@/lib/products";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Air Fryer Brands",
   description: "Explore air fryer brands and the product models currently in the catalog.",
+  alternates: { canonical: "/brands" },
 };
 
 export default async function BrandsPage() {
