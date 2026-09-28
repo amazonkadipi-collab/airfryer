@@ -10,7 +10,14 @@ import { getCatalogImage, getCatalogSource } from "@/lib/product-images";
 
 type Props = { params: Promise<{ slug: string }> };
 
-function formatDimensions(v: unknown) {\n  if (!v || typeof v !== "object") return String(v);\n  const d = v as Record<string, unknown>;\n  if (d.width_in && d.depth_in && d.height_in) return `${d.width_in}" W × ${d.depth_in}" D × ${d.height_in}" H`;\n  return String(v);\n}\n\nfunction value(v: unknown) {
+function formatDimensions(v: unknown) {
+  if (!v || typeof v !== "object") return String(v);
+  const d = v as Record<string, unknown>;
+  if (d.width_in && d.depth_in && d.height_in) return `${d.width_in}" W × ${d.depth_in}" D × ${d.height_in}" H`;
+  return String(v);
+}
+
+function value(v: unknown) {
   if (v === null || v === undefined || v === "") return "Not verified";
   if (typeof v === "boolean") return v ? "Yes" : "No";
   return String(v);
@@ -49,6 +56,7 @@ export default async function ProductPage({ params }: Props) {
 
   const [similar] = await Promise.all([getSimilarProducts(product.id, 4)]);
   const catalogImage = getCatalogImage(product.slug, product.image_url);
+  const catalogSource = getCatalogSource(product.slug);
   const fields: Array<[string, unknown]> = [
     ["Capacity", product.capacity_quart ? `${product.capacity_quart} qt` : null],
     ["Capacity liters", product.capacity_liters ? `${product.capacity_liters} L` : null],
@@ -58,9 +66,9 @@ export default async function ProductPage({ params }: Props) {
     ["Controls", product.digital_controls === null ? null : product.digital_controls ? "Digital" : "Manual"],
     ["Dishwasher safe", product.dishwasher_safe],
     ["Rotisserie", product.rotisserie],
-    ["Temperature", product.temperature_min != null && product.temperature_max != null ? `${product.temperature_min}–${product.temperature_max}` : null],
-    ["Dimensions", product.dimensions ? JSON.stringify(product.dimensions) : null],
-    ["Weight", product.weight ? String(product.weight) : null],
+    ["Temperature", product.temperature_min != null && product.temperature_max != null ? `${product.temperature_min}–${product.temperature_max} °F` : null],
+    ["Dimensions", product.dimensions ? formatDimensions(product.dimensions) : null],
+    ["Weight", product.weight ? `${product.weight} kg` : null],
   ];
 
   const identifiers = product.identifiers ?? [];
@@ -137,8 +145,10 @@ export default async function ProductPage({ params }: Props) {
 
               {offers.length > 0 ? (
                 <a href="#where-to-buy" className="cta">Check retailers</a>
+              ) : catalogSource ? (
+                <a href={catalogSource} className="cta" target="_blank" rel="noopener noreferrer">Official product page</a>
               ) : (
-                <span className="cta cta--muted">Retailer data coming soon</span>
+                <span className="cta cta--muted">Retailer information unavailable</span>
               )}
             </div>
           </div>
