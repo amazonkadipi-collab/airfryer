@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Search",
   description: "Search the Air Fryer product database by model, brand, UPC, EAN, ASIN, MPN or product title.",
   robots: { index: false, follow: true },
+  alternates: { canonical: "/search" },
 };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
