@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "i5.walmartimages.com" },
       { protocol: "https", hostname: "target.scene7.com" },
       { protocol: "https", hostname: "mobileimages.lowes.com" },
+      { protocol: "https", hostname: "cosori.com" },
+      { protocol: "https", hostname: "instantpot.com" },
     ],
   },
 };
