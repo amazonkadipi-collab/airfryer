@@ -23,8 +23,8 @@ export default async function HomePage() {
       <SiteHeader />
       <section className="hero">
         <div className="shell">
-          <span className="eyebrow"><span className="live-dot" /> PRODUCT INTELLIGENCE</span>
-          <h1 className="hero__title">Find the right air fryer.</h1>
+          <span className="eyebrow"><span className="live-dot" /> YOUR LITTLE AIR-FRYER GUIDE</span>
+          <h1 className="hero__title">Find an air fryer you’ll love. ♡</h1>
           <p className="hero__sub">
             Search real models, compare specifications, and check product identifiers.
             No filler. No invented data.
@@ -54,7 +54,7 @@ export default async function HomePage() {
         <section className="section">
           <div className="shell">
             <div className="section-head">
-              <div><span className="eyebrow">POPULAR MODELS</span><h2>Air fryers worth identifying</h2></div>
+              <div><span className="eyebrow">♡ POPULAR PICKS</span><h2>Pretty little picks for your kitchen</h2></div>
               <Link href="/air-fryers">Browse all →</Link>
             </div>
             <div className="product-grid">
@@ -67,7 +67,7 @@ export default async function HomePage() {
       <section className="section">
         <div className="shell">
           <div className="section-head">
-            <div><span className="eyebrow">EXPLORE</span><h2>Browse by capacity</h2></div>
+            <div><span className="eyebrow">♡ FIND YOUR FIT</span><h2>Choose the size that feels right</h2></div>
           </div>
           <div className="capacity-grid">
             {capacities.map(([label, description]) => (
@@ -85,7 +85,7 @@ export default async function HomePage() {
         <section className="section">
           <div className="shell">
             <div className="section-head">
-              <div><span className="eyebrow">BRANDS</span><h2>Explore manufacturers</h2></div>
+              <div><span className="eyebrow">♡ FAVORITE BRANDS</span><h2>Shop by brand</h2></div>
               <Link href="/brands">All brands →</Link>
             </div>
             <div className="product-grid">
