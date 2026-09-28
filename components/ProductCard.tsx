@@ -14,9 +14,10 @@ export interface ProductCardData {
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const specs = [
+    product.model ? `Model: ${product.model}` : null,
     product.capacity_quart ? `${product.capacity_quart} qt` : null,
     product.basket_type,
-  ].filter(Boolean).join(" · ");
+  ].filter(Boolean);
 
   return (
     <Link href={`/products/${product.slug}`} className="card">
@@ -39,7 +40,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       <div className="card__body">
         {product.brand_name && <p className="card__brand">{product.brand_name}</p>}
         <h3 className="card__title">{product.title}</h3>
-        {specs && <p className="card__specs">{specs}</p>}
+        {specs.length > 0 && <p className="card__specs">{specs.join(" · ")}</p>}
+        <span className="card__link">View full details →</span>
       </div>
     </Link>
   );
