@@ -19,8 +19,8 @@ export default async function FinderPage({ searchParams }: { searchParams: Promi
     if (size === "small" && !(p.capacity_quart && p.capacity_quart <= 5)) return false;
     if (size === "medium" && !(p.capacity_quart && p.capacity_quart > 5 && p.capacity_quart <= 8)) return false;
     if (size === "large" && !(p.capacity_quart && p.capacity_quart > 8)) return false;
-    if (basket === "dual" && !(p.basket_type?.toLowerCase().includes("dual") || p.basket_count > 1)) return false;
-    if (controls === "digital" && !p.digital_controls) return false;
+    if (basket === "dual" && !(p.basket_type?.toLowerCase().includes("dual") || (p as any).basket_count > 1)) return false;
+    if (controls === "digital" && !(p as any).digital_controls) return false;
     return true;
   }).slice(0, 24);
 
