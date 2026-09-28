@@ -53,7 +53,7 @@ export async function getFeaturedProducts(limit = 12): Promise<ProductSearchRow[
   if (!db) return [];
   const rows = await db`
     SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score, p.basket_type, p.basket_count, p.digital_controls,
-      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.licensed DESC, pi.sort_order ASC LIMIT 1) AS image_url
     FROM products p
     LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.status = 'active' AND p.indexable = true
@@ -68,7 +68,7 @@ export async function searchProducts(query: string): Promise<ProductSearchRow[]>
   const q = query.trim();
   const rows = await db`
     SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
-      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url,
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.licensed DESC, pi.sort_order ASC LIMIT 1) AS image_url,
       (CASE WHEN lower(coalesce(p.model, '')) = lower(${q}) THEN 100 ELSE 0 END +
        CASE WHEN lower(p.title) = lower(${q}) THEN 90 ELSE 0 END +
        CASE WHEN lower(coalesce(b.name, '')) = lower(${q}) THEN 80 ELSE 0 END +
@@ -96,7 +96,7 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
       p.description, p.capacity_liters, p.wattage, p.basket_type, p.basket_count,
       p.dishwasher_safe, p.rotisserie, p.digital_controls, p.temperature_min, p.temperature_max,
       p.dimensions, p.weight, p.indexable, p.human_verified, p.verified_at, p.conflict_flag,
-      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url,
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.licensed DESC, pi.sort_order ASC LIMIT 1) AS image_url,
       COALESCE((SELECT json_agg(json_build_object('identifier_type', i.identifier_type, 'identifier_value', i.identifier_value) ORDER BY i.identifier_type)
         FROM product_identifiers i WHERE i.product_id = p.id AND i.verified = true), '[]'::json) AS identifiers,
       COALESCE((SELECT json_agg(json_build_object('retailer_slug', r.domain, 'retailer_name', r.name, 'price', pr.price, 'currency', pr.currency, 'url', pr.url, 'affiliate_url', pr.affiliate_url, 'availability', pr.availability, 'last_checked_at', pr.last_checked_at) ORDER BY pr.price NULLS LAST)
@@ -190,7 +190,7 @@ export async function getSimilarProducts(productId: number, limit = 4): Promise<
       FROM products WHERE id = ${productId} LIMIT 1
     )
     SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
-      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.licensed DESC, pi.sort_order ASC LIMIT 1) AS image_url
     FROM target t
     JOIN products p ON p.id <> ${productId} AND p.status = 'active' AND p.indexable = true
     LEFT JOIN brands b ON b.id = p.brand_id
