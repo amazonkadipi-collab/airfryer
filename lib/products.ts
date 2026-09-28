@@ -7,6 +7,7 @@ export type ProductSearchRow = {
   brand_name: string | null;
   capacity_quart: number | null;
   quality_score: number | null;
+  image_url?: string | null;
 };
 
 export type ProductRecord = ProductSearchRow & {
@@ -23,6 +24,9 @@ export type ProductRecord = ProductSearchRow & {
   dimensions: unknown;
   weight: number | null;
   indexable: boolean;
+  image_url: string | null;
+  identifiers: Array<{ identifier_type: string; identifier_value: string }>;
+  offers: Array<{ retailer_slug: string; retailer_name: string; price: number | null; currency: string | null; affiliate_url: string | null }>;
 };
 
 export async function getBrands(): Promise<Array<{ slug: string; name: string; product_count: number }>> {
@@ -41,7 +45,8 @@ export async function getFeaturedProducts(limit = 12): Promise<ProductSearchRow[
   const db = getDb();
   if (!db) return [];
   const rows = await db`
-    SELECT p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score
+    SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url
     FROM products p
     LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.status = 'active' AND p.indexable = true
@@ -55,7 +60,8 @@ export async function searchProducts(query: string): Promise<ProductSearchRow[]>
   if (!db || !query.trim()) return [];
   const q = query.trim();
   const rows = await db`
-    SELECT p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
+    SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url,
       (CASE WHEN lower(coalesce(p.model, '')) = lower(${q}) THEN 100 ELSE 0 END +
        CASE WHEN lower(p.title) = lower(${q}) THEN 90 ELSE 0 END +
        CASE WHEN lower(coalesce(b.name, '')) = lower(${q}) THEN 80 ELSE 0 END +
@@ -79,10 +85,16 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
   const db = getDb();
   if (!db) return null;
   const rows = await db`
-    SELECT p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
+    SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
       p.description, p.capacity_liters, p.wattage, p.basket_type, p.basket_count,
       p.dishwasher_safe, p.rotisserie, p.digital_controls, p.temperature_min, p.temperature_max,
-      p.dimensions, p.weight, p.indexable
+      p.dimensions, p.weight, p.indexable,
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url,
+      COALESCE((SELECT json_agg(json_build_object('identifier_type', i.identifier_type, 'identifier_value', i.identifier_value) ORDER BY i.identifier_type)
+        FROM product_identifiers i WHERE i.product_id = p.id AND i.verified = true), '[]'::json) AS identifiers,
+      COALESCE((SELECT json_agg(json_build_object('retailer_slug', r.domain, 'retailer_name', r.name, 'price', pr.price, 'currency', pr.currency, 'affiliate_url', pr.affiliate_url) ORDER BY pr.price NULLS LAST)
+        FROM product_retailers pr JOIN retailers r ON r.id = pr.retailer_id
+        WHERE pr.product_id = p.id AND pr.availability = 'in_stock' AND pr.affiliate_url IS NOT NULL), '[]'::json) AS offers
     FROM products p LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.slug = ${slug} AND p.status = 'active' LIMIT 1
   `;
@@ -159,4 +171,30 @@ export async function getAlternatives(slug: string): Promise<{ product: ProductR
     product,
     alternatives: typedRows.map((x) => ({ ...x.product, match_score: x.match_score })),
   };
+}
+
+
+export async function getSimilarProducts(productId: number, limit = 4): Promise<ProductSearchRow[]> {
+  const db = getDb();
+  if (!db) return [];
+  const rows = await db`
+    WITH target AS (
+      SELECT brand_id, capacity_quart, basket_type, basket_count
+      FROM products WHERE id = ${productId} LIMIT 1
+    )
+    SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.licensed = true ORDER BY pi.sort_order ASC LIMIT 1) AS image_url
+    FROM target t
+    JOIN products p ON p.id <> ${productId} AND p.status = 'active' AND p.indexable = true
+    LEFT JOIN brands b ON b.id = p.brand_id
+    ORDER BY
+      (CASE WHEN t.brand_id = p.brand_id THEN 30 ELSE 0 END) +
+      (CASE WHEN t.basket_type IS NOT NULL AND t.basket_type = p.basket_type THEN 20 ELSE 0 END) +
+      (CASE WHEN t.capacity_quart IS NOT NULL AND p.capacity_quart IS NOT NULL
+        THEN greatest(0, 25 - abs(t.capacity_quart - p.capacity_quart) * 5) ELSE 0 END) +
+      (CASE WHEN t.basket_count IS NOT NULL AND t.basket_count = p.basket_count THEN 10 ELSE 0 END) DESC,
+      p.quality_score DESC NULLS LAST, p.title ASC
+    LIMIT ${limit}
+  `;
+  return rows as unknown as ProductSearchRow[];
 }
