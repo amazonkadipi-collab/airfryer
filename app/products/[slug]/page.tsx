@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getProductBySlug, getSimilarProducts } from "@/lib/products";
-import { getCatalogImage } from "@/lib/product-images";
+import { getCatalogImage, getCatalogSource } from "@/lib/product-images";
 
 type Props = { params: Promise<{ slug: string }> };
 
