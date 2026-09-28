@@ -91,10 +91,10 @@ const catalog: CatalogItem[] = [
     model: "CP158-AF",
     title: "COSORI Air Fryer Max XL 5.8-Quart (CP158-AF)",
     capacityQuart: 5.8, basketType: "single basket", basketCount: 1, wattage: 1700, dishwasherSafe: true, temperatureMin: 170, temperatureMax: 400,
-    dimensions: { width_in: 11.8, length_in: 11.8, height_in: 12.6 },
+    dimensions: { width_in: 11.8, length_in: 14.3, height_in: 12.6 }, weightKg: 5.4,
     imageUrl: "https://djd1xqjx2kdnv.cloudfront.net/photos/36/81/489642_27284_XXXL.jpg",
     imageSource: "cloudfront",
-    sourceUrl: "https://cosori.com/products/pro-le-5-0-quart-air-fryer",
+    sourceUrl: "https://www.cpsc.gov/Recalls/2023/Two-Million-COSORI-Air-Fryers-Recalled-by-Atekcity-Due-to-Fire-and-Burn-Hazards",
     identifiers: [
       { type: "MPN", value: "CP158-AF", verified: true, source: "web:cosori.com" },
       { type: "ASIN", value: "B07N8N6C85", verified: true, source: "web:device.report" },
