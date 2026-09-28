@@ -1,6 +1,7 @@
 import { getDb } from "./db";
 
 export type ProductSearchRow = {
+  id: number;
   slug: string;
   title: string;
   model: string | null;
