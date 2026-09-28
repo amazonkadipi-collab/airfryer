@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Air Fryers",
   description: "Browse air fryers by capacity, basket type, and structured product data.",
   alternates: { canonical: "/air-fryers" },
+  openGraph: { url: "/air-fryers", type: "website" },
 };
 
 const filters = ["Compact", "4 Quart", "6 Quart", "8 Quart", "10+ Quart", "Dual Basket", "Dishwasher Safe", "Rotisserie"];
