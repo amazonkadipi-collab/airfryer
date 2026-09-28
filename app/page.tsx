@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getFeaturedProducts } from "@/lib/products";
 
 const capacities = [
   ["Compact", "Under 4 qt"],
@@ -10,7 +11,8 @@ const capacities = [
 const uses = ["1 person", "2 people", "Families", "Small kitchen", "Large family"];
 const brands = ["Ninja", "Cosori", "Instant", "Philips", "Chefman", "Cuisinart"];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredProducts = await getFeaturedProducts(6);
   return (
     <main>
       <header className="site-header">
@@ -69,6 +71,22 @@ export default function HomePage() {
         <div className="shell">
           <div className="section-head"><div><span className="eyebrow">BRANDS</span><h2>Explore popular brands</h2></div><Link href="/brands">All brands →</Link></div>
           <div className="brand-grid">{brands.map(x => <Link href="/brands" key={x} className="brand-pill">{x}<span>→</span></Link>)}</div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="shell">
+          <div className="section-head"><div><span className="eyebrow">LIVE CATALOG</span><h2>Featured air fryers</h2></div><Link href="/air-fryers">View all →</Link></div>
+          <div className="capacity-grid">
+            {featuredProducts.map(product => (
+              <Link href={`/products/${product.slug}`} className="capacity-card" key={product.slug}>
+                <span className="eyebrow">{product.brand_name ?? "Brand"}</span>
+                <strong>{product.title}</strong>
+                <span>{product.capacity_quart ? `${product.capacity_quart} qt` : "Capacity not verified"}</span>
+                <i>View product →</i>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
