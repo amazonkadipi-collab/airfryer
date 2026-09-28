@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Product", robots: { index: false, follow: true } };
   }
 
-  const specs = [
-    product.capacity_quart ? `${product.capacity_quart} qt` : null,
+  const catalogImage = getCatalogImage(product.slug, product.image_url);
+  const specs = [    product.capacity_quart ? `${product.capacity_quart} qt` : null,
     product.wattage ? `${product.wattage}W` : null,
     product.basket_type,
   ].filter(Boolean).join(", ");
@@ -105,9 +105,9 @@ export default async function ProductPage({ params }: Props) {
           <div className="product-grid">
             <div className="product-visual">
               <span className="eyebrow">PRODUCT IMAGE</span>
-              {product.image_url ? (
+              {catalogImage ? (
                 <div className="product-image">
-                  <Image src={product.image_url} alt={product.title} width={800} height={800} priority sizes="(max-width: 767px) 100vw, 50vw" />
+                  <Image src={catalogImage} alt={product.title} width={800} height={800} priority sizes="(max-width: 767px) 100vw, 50vw" />
                 </div>
               ) : (
                 <div className="product-placeholder" aria-label="Product image not available">
