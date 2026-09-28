@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Compare Air Fryers",
   description: "Compare air fryer models side by side using structured product data.",
   robots: { index: false, follow: true },
-  alternates: { canonical: "/compare" },
+  alternates: { canonical: "/compare" }, openGraph: { url: "/compare", type: "website" },
 };
 
 function v(value: unknown) {
