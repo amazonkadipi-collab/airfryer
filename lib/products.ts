@@ -25,6 +25,19 @@ export type ProductRecord = ProductSearchRow & {
   indexable: boolean;
 };
 
+export async function getFeaturedProducts(limit = 12): Promise<ProductSearchRow[]> {
+  const db = getDb();
+  if (!db) return [];
+  const rows = await db`
+    SELECT p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score
+    FROM products p
+    LEFT JOIN brands b ON b.id = p.brand_id
+    WHERE p.status = 'active' AND p.indexable = true
+    ORDER BY p.quality_score DESC NULLS LAST, p.updated_at DESC, p.title ASC
+    LIMIT ${limit}
+  `;
+  return rows as unknown as ProductSearchRow[];
+}
 export async function searchProducts(query: string): Promise<ProductSearchRow[]> {
   const db = getDb();
   if (!db || !query.trim()) return [];
