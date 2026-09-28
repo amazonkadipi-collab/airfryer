@@ -1,12 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ProductCard } from "@/components/ProductCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getFeaturedProducts } from "@/lib/products";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Air Fryers",
   description: "Browse air fryers by capacity, basket type, and structured product data.",
+  alternates: { canonical: "/air-fryers" },
 };
 
 const filters = ["Compact", "4 Quart", "6 Quart", "8 Quart", "10+ Quart", "Dual Basket", "Dishwasher Safe", "Rotisserie"];
