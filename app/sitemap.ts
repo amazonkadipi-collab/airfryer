@@ -24,7 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/air-fryers/6-quart`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/best/air-fryers-for-two`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/best/dual-basket-air-fryers`, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${baseUrl}/finder`, changeFrequency: "weekly", priority: 0.8 },
   ];
 
   const db = getDb();
