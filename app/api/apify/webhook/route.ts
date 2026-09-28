@@ -10,11 +10,11 @@ async function findDuplicate(sql: ReturnType<typeof neon>, p: RawProduct): Promi
   const identifiers = [["ASIN", p.asin?.trim().toUpperCase()], ["UPC", p.upc?.replace(/\D/g, "")], ["EAN", p.ean?.replace(/\D/g, "")]].filter((x): x is [string, string] => Boolean(x[1]));
   for (const [type, value] of identifiers) {
     const rows = await sql`SELECT product_id FROM product_identifiers WHERE identifier_type = ${type} AND identifier_value = ${value} LIMIT 1`;
-    if (rows.length) return true;
+    if (Array.isArray(rows) && rows.length > 0) return true;
   }
   if (p.model?.trim()) {
     const rows = await sql`SELECT p.id FROM products p JOIN brands b ON b.id = p.brand_id WHERE lower(b.name) = lower(${p.brand || "Unknown"}) AND lower(p.model) = lower(${p.model.trim()}) LIMIT 1`;
-    if (rows.length) return true;
+    if (Array.isArray(rows) && rows.length > 0) return true;
   }
   return false;
 }
