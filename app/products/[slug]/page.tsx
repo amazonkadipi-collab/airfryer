@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getProductBySlug, getSimilarProducts } from "@/lib/products";
+import { getCatalogImage } from "@/lib/product-images";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: product.title,
       description: product.description ?? `Structured specifications for ${product.title}.`,
       type: "website",
-      images: product.image_url ? [product.image_url] : undefined,
+      images: catalogImage ? [catalogImage] : undefined,
     },
   };
 }
@@ -47,6 +48,7 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const [similar] = await Promise.all([getSimilarProducts(product.id, 4)]);
+  const catalogImage = getCatalogImage(product.slug, product.image_url);
   const fields: Array<[string, unknown]> = [
     ["Capacity", product.capacity_quart ? `${product.capacity_quart} qt` : null],
     ["Capacity liters", product.capacity_liters ? `${product.capacity_liters} L` : null],
@@ -69,7 +71,7 @@ export default async function ProductPage({ params }: Props) {
     name: product.title,
     brand: product.brand_name ? { "@type": "Brand", name: product.brand_name } : undefined,
     model: product.model ?? undefined,
-    image: product.image_url ? [product.image_url] : undefined,
+    image: catalogImage ? [catalogImage] : undefined,
     sku: product.model ?? undefined,
     ...(identifiers.find((i) => i.identifier_type.toUpperCase() === "UPC")?.identifier_value
       ? { gtin12: identifiers.find((i) => i.identifier_type.toUpperCase() === "UPC")?.identifier_value }
