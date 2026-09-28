@@ -4,6 +4,8 @@ export const metadata = {
   title: "How We Rank",
   description: "How Air Fryer evaluates product data, identity, completeness and comparison usefulness.",
   robots: { index: true, follow: true },
+  alternates: { canonical: "/how-we-rank" },
+  openGraph: { url: "/how-we-rank", type: "website" },
 };
 
 export default function Page() {
