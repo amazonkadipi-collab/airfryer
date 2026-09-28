@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getProductBySlug } from "@/lib/products";
+import { getFeaturedProducts, getProductBySlug } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Compare Air Fryers",
@@ -19,7 +19,7 @@ function v(value: unknown) {
 
 export default async function ComparePage({ searchParams }: { searchParams: Promise<{ a?: string; b?: string }> }) {
   const { a, b } = await searchParams;
-  const [left, right] = await Promise.all([a ? getProductBySlug(a) : null, b ? getProductBySlug(b) : null]);
+  const [left, right, products] = await Promise.all([a ? getProductBySlug(a) : null, b ? getProductBySlug(b) : null, getFeaturedProducts(12)]);
   const rows: Array<[string, unknown, unknown]> = [
     ["Brand", left?.brand_name, right?.brand_name],
     ["Model", left?.model, right?.model],
@@ -41,7 +41,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
       <h1 className="page-title">Compare two air fryers without the guesswork.</h1>
       <p className="page-lead">Only fields supported by the catalog are compared. Missing information stays clearly marked instead of being guessed.</p>
       {!left || !right ? (
-        <div className="compare-select"><div><span>MODEL A</span><strong>{left?.title ?? "Choose a product"}</strong></div><b>VS</b><div><span>MODEL B</span><strong>{right?.title ?? "Choose a product"}</strong></div></div>
+        <div className="compare-select"><div><span>MODEL A</span><strong>{left?.title ?? "Choose a product"}</strong><div className="compare-options">{products.map(p => <Link key={p.slug} href={"/compare?a=" + encodeURIComponent(p.slug) + (b ? "&b=" + encodeURIComponent(b) : "")}>{p.model ?? p.title}</Link>)}</div></div><b>VS</b><div><span>MODEL B</span><strong>{right?.title ?? "Choose a product"}</strong><div className="compare-options">{products.map(p => <Link key={p.slug} href={"/compare?" + (a ? "a=" + encodeURIComponent(a) + "&" : "") + "b=" + encodeURIComponent(p.slug)}>{p.model ?? p.title}</Link>)}</div></div></div>
       ) : (
         <>
           <div className="compare-select"><div><span>MODEL A</span><strong>{left.title}</strong><small>{left.brand_name} · {left.model ?? "Model not verified"}</small></div><b>VS</b><div><span>MODEL B</span><strong>{right.title}</strong><small>{right.brand_name} · {right.model ?? "Model not verified"}</small></div></div>
@@ -52,7 +52,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
           <div className="action-row"><Link href={`/products/${left.slug}`} className="button">View {left.model ?? "model A"}</Link><Link href={`/products/${right.slug}`} className="button">View {right.model ?? "model B"}</Link></div>
         </>
       )}
-      <div className="empty-panel compare-help"><span className="eyebrow">HOW TO USE IT</span><h2>Open any product and tap Compare.</h2><p>For direct comparisons, use <code>/compare?a=PRODUCT-SLUG&amp;b=PRODUCT-SLUG</code>. The comparison page never invents price, ratings, or features.</p><Link href="/search" className="button">Find products</Link></div>
+      <div className="empty-panel compare-help"><span className="eyebrow">HOW TO USE IT</span><h2>Choose two models, then compare.</h2><p>For direct comparisons, use <code>/compare?a=PRODUCT-SLUG&amp;b=PRODUCT-SLUG</code>. The comparison page never invents price, ratings, or features.</p><Link href="/search" className="button">Find products</Link></div>
     </div></section>
     <SiteFooter />
   </main>;
