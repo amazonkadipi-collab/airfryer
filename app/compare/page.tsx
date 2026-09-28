@@ -1,59 +1,210 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getFeaturedProducts, getProductBySlug } from "@/lib/products";
+import { getCatalogImage, getCatalogSource } from "@/lib/product-images";
+import { getFeaturedProducts, getProductBySlug, getSimilarProducts } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Compare Air Fryers",
-  description: "Compare air fryer models side by side using structured product data.",
+  description: "Compare air fryer models side by side using source-backed product specifications.",
   robots: { index: false, follow: true },
-  alternates: { canonical: "/compare" }, openGraph: { url: "/compare", type: "website" },
+  alternates: { canonical: "/compare" },
+  openGraph: { url: "/compare", type: "website" },
 };
 
-function v(value: unknown) {
-  if (value === null || value === undefined || value === "") return "Not verified";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
-  return String(value);
+type Product = NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>;
+
+function value(raw: unknown): string {
+  if (raw === null || raw === undefined || raw === "") return "Not listed in source";
+  if (typeof raw === "boolean") return raw ? "Yes" : "No";
+  return String(raw);
 }
 
-export default async function ComparePage({ searchParams }: { searchParams: Promise<{ a?: string; b?: string }> }) {
-  const { a, b } = await searchParams;
-  const [left, right, products] = await Promise.all([a ? getProductBySlug(a) : null, b ? getProductBySlug(b) : null, getFeaturedProducts(12)]);
-  const rows: Array<[string, unknown, unknown]> = [
-    ["Brand", left?.brand_name, right?.brand_name],
-    ["Model", left?.model, right?.model],
-    ["Capacity", left?.capacity_quart ? `${left.capacity_quart} qt` : null, right?.capacity_quart ? `${right.capacity_quart} qt` : null],
-    ["Capacity liters", left?.capacity_liters ? `${left.capacity_liters} L` : null, right?.capacity_liters ? `${right.capacity_liters} L` : null],
-    ["Basket", left?.basket_type, right?.basket_type],
-    ["Basket count", left?.basket_count, right?.basket_count],
-    ["Power", left?.wattage ? `${left.wattage} W` : null, right?.wattage ? `${right.wattage} W` : null],
-    ["Controls", left?.digital_controls == null ? null : left.digital_controls ? "Digital" : "Manual", right?.digital_controls == null ? null : right.digital_controls ? "Digital" : "Manual"],
-    ["Dishwasher safe", left?.dishwasher_safe, right?.dishwasher_safe],
-    ["Rotisserie", left?.rotisserie, right?.rotisserie],
-    ["Quality score", left?.quality_score, right?.quality_score],
-  ];
+function temperature(p: Product): string {
+  if (p.temperature_min != null && p.temperature_max != null) return `${p.temperature_min}–${p.temperature_max} °F`;
+  if (p.temperature_max != null) return `Up to ${p.temperature_max} °F`;
+  if (p.temperature_min != null) return `From ${p.temperature_min} °F`;
+  return "Not listed in source";
+}
 
-  return <main>
-    <SiteHeader />
-    <section className="section"><div className="shell">
-      <span className="eyebrow">COMPARE · SIDE BY SIDE</span>
-      <h1 className="page-title">Compare two air fryers without the guesswork.</h1>
-      <p className="page-lead">Only fields supported by the catalog are compared. Missing information stays clearly marked instead of being guessed.</p>
-      {!left || !right ? (
-        <div className="compare-select"><div><span>MODEL A</span><strong>{left?.title ?? "Choose a product"}</strong><div className="compare-options">{products.map(p => <Link key={p.slug} href={"/compare?a=" + encodeURIComponent(p.slug) + (b ? "&b=" + encodeURIComponent(b) : "")}>{p.model ?? p.title}</Link>)}</div></div><b>VS</b><div><span>MODEL B</span><strong>{right?.title ?? "Choose a product"}</strong><div className="compare-options">{products.map(p => <Link key={p.slug} href={"/compare?" + (a ? "a=" + encodeURIComponent(a) + "&" : "") + "b=" + encodeURIComponent(p.slug)}>{p.model ?? p.title}</Link>)}</div></div></div>
-      ) : (
-        <>
-          <div className="compare-select"><div><span>MODEL A</span><strong>{left.title}</strong><small>{left.brand_name} · {left.model ?? "Model not verified"}</small></div><b>VS</b><div><span>MODEL B</span><strong>{right.title}</strong><small>{right.brand_name} · {right.model ?? "Model not verified"}</small></div></div>
-          <div className="compare-table" role="table" aria-label="Air fryer comparison">
-            <div className="compare-table__head"><b>Specification</b><b>{left.model ?? left.title}</b><b>{right.model ?? right.title}</b></div>
-            {rows.map(([label, x, y], i) => <div className="compare-table__row" key={`${label}-${i}`}><b>{label}</b><span>{v(x)}</span><span>{v(y)}</span></div>)}
-          </div>
-          <div className="action-row"><Link href={`/products/${left.slug}`} className="button">View {left.model ?? "model A"}</Link><Link href={`/products/${right.slug}`} className="button">View {right.model ?? "model B"}</Link></div>
-        </>
-      )}
-      <div className="empty-panel compare-help"><span className="eyebrow">HOW TO USE IT</span><h2>Choose two models, then compare.</h2><p>For direct comparisons, use <code>/compare?a=PRODUCT-SLUG&amp;b=PRODUCT-SLUG</code>. The comparison page never invents price, ratings, or features.</p><Link href="/search" className="button">Find products</Link></div>
-    </div></section>
-    <SiteFooter />
-  </main>;
+function dimensions(raw: unknown): string {
+  if (!raw || typeof raw !== "object") return value(raw);
+  const d = raw as Record<string, unknown>;
+  const hasInches = d.width_in !== undefined || d.depth_in !== undefined || d.length_in !== undefined || d.height_in !== undefined;
+  const width = d.width_in ?? d.width ?? d.width_cm;
+  const depth = d.depth_in ?? d.length_in ?? d.depth ?? d.depth_cm ?? d.length_cm;
+  const height = d.height_in ?? d.height ?? d.height_cm;
+  if (width != null && depth != null && height != null) {
+    return hasInches
+      ? `${width}" W × ${depth}" D × ${height}" H`
+      : `${width} cm W × ${depth} cm D × ${height} cm H`;
+  }
+  return value(raw);
+}
+
+function completeness(p: Product): number {
+  const fields = [
+    p.brand_name, p.model, p.description, p.capacity_quart, p.capacity_liters, p.wattage,
+    p.basket_type, p.basket_count, p.dishwasher_safe, p.rotisserie, p.digital_controls,
+    p.temperature_min, p.temperature_max, p.dimensions, p.weight, p.identifiers.length,
+  ];
+  return Math.round(fields.filter((item) => item !== null && item !== undefined && item !== "").length / fields.length * 100);
+}
+
+function optionLabel(p: { brand_name: string | null; model: string | null; title: string }) {
+  return `${p.brand_name ?? ""}${p.model ? ` · ${p.model}` : ` · ${p.title}`}`;
+}
+
+export default async function ComparePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ a?: string; b?: string }>;
+}) {
+  const { a, b } = await searchParams;
+  const products = await getFeaturedProducts(24);
+
+  const left = a ? await getProductBySlug(a) : null;
+  let suggestedSlug: string | null = null;
+  if (left && !b) {
+    const similar = await getSimilarProducts(left.id, 1);
+    suggestedSlug = similar[0]?.slug ?? products.find((p) => p.slug !== left.slug)?.slug ?? null;
+  }
+  const rightSlug = b ?? suggestedSlug;
+  const right = rightSlug ? await getProductBySlug(rightSlug) : null;
+  const comparing = Boolean(left && right && left.slug !== right.slug);
+
+  const rows: Array<[string, string, string]> = comparing
+    ? [
+        ["Brand", value(left.brand_name), value(right.brand_name)],
+        ["Model", value(left.model), value(right.model)],
+        ["Capacity", left.capacity_quart != null ? `${left.capacity_quart} qt` : value(null), right.capacity_quart != null ? `${right.capacity_quart} qt` : value(null)],
+        ["Capacity liters", left.capacity_liters != null ? `${left.capacity_liters} L` : value(null), right.capacity_liters != null ? `${right.capacity_liters} L` : value(null)],
+        ["Power", left.wattage != null ? `${left.wattage} W` : value(null), right.wattage != null ? `${right.wattage} W` : value(null)],
+        ["Temperature", temperature(left), temperature(right)],
+        ["Dimensions", dimensions(left.dimensions), dimensions(right.dimensions)],
+        ["Weight", left.weight != null ? `${left.weight} kg` : value(null), right.weight != null ? `${right.weight} kg` : value(null)],
+        ["Basket", value(left.basket_type), value(right.basket_type)],
+        ["Basket count", value(left.basket_count), value(right.basket_count)],
+        ["Controls", left.digital_controls == null ? value(null) : left.digital_controls ? "Digital" : "Manual", right.digital_controls == null ? value(null) : right.digital_controls ? "Digital" : "Manual"],
+        ["Dishwasher safe", value(left.dishwasher_safe), value(right.dishwasher_safe)],
+        ["Rotisserie", value(left.rotisserie), value(right.rotisserie)],
+        ["Verified IDs", String(left.identifiers.length), String(right.identifiers.length)],
+        ["Data completeness", `${completeness(left)}%`, `${completeness(right)}%`],
+      ]
+    : [];
+
+  return (
+    <main>
+      <SiteHeader />
+      <section className="section compare-page">
+        <div className="shell">
+          <span className="eyebrow">COMPARE · SIDE BY SIDE</span>
+          <h1 className="page-title">Compare air fryers using real catalog data.</h1>
+          <p className="page-lead">
+            Pick two models and compare the specifications actually stored for each product. Nothing is invented when a source does not list a field.
+          </p>
+
+          <form className="compare-picker" action="/compare" method="get">
+            <label>
+              <span>MODEL A</span>
+              <select name="a" defaultValue={left?.slug ?? ""}>
+                <option value="">Choose a model</option>
+                {products.map((p) => (
+                  <option key={p.slug} value={p.slug}>{optionLabel(p)}</option>
+                ))}
+              </select>
+            </label>
+            <div className="compare-picker__vs" aria-hidden="true">VS</div>
+            <label>
+              <span>MODEL B</span>
+              <select name="b" defaultValue={b ?? suggestedSlug ?? ""}>
+                <option value="">Choose a model</option>
+                {products.map((p) => (
+                  <option key={p.slug} value={p.slug}>{optionLabel(p)}</option>
+                ))}
+              </select>
+            </label>
+            <button className="button" type="submit">Compare models</button>
+          </form>
+
+          {left && !b && suggestedSlug && (
+            <div className="compare-note">
+              <strong>Showing a suggested second model.</strong>
+              <span>Choose Model B above to change the comparison, then the URL becomes a shareable two-model comparison.</span>
+            </div>
+          )}
+
+          {comparing ? (
+            <>
+              <div className="compare-products">
+                {[left, right].map((p) => {
+                  const image = getCatalogImage(p.slug, p.image_url);
+                  const source = getCatalogSource(p.slug);
+                  return (
+                    <article className="compare-product" key={p.slug}>
+                      <div className="compare-product__image">
+                        {image ? (
+                          <Image src={image} alt={p.title} width={420} height={320} sizes="(max-width: 700px) 100vw, 42vw" />
+                        ) : (
+                          <span>AF</span>
+                        )}
+                      </div>
+                      <div className="compare-product__body">
+                        <span className="eyebrow">{p.brand_name ?? "CATALOG"}</span>
+                        <h2>{p.title}</h2>
+                        <p>{p.model ? `Model ${p.model}` : "Model not listed in source"}</p>
+                        <div className="compare-product__facts">
+                          <span>{p.capacity_quart != null ? `${p.capacity_quart} qt` : "Capacity not listed"}</span>
+                          <span>{p.wattage != null ? `${p.wattage} W` : "Power not listed"}</span>
+                          <span>{temperature(p)}</span>
+                        </div>
+                        <div className="compare-product__actions">
+                          <Link href={`/products/${p.slug}`} className="button">View product</Link>
+                          {source && <a href={source} target="_blank" rel="noopener noreferrer" className="button button-outline">View source ↗</a>}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div className="compare-table" role="table" aria-label="Air fryer comparison">
+                <div className="compare-table__head">
+                  <b>Specification</b>
+                  <b>{left.model ?? left.title}</b>
+                  <b>{right.model ?? right.title}</b>
+                </div>
+                {rows.map(([label, x, y]) => (
+                  <div className="compare-table__row" key={label}>
+                    <b>{label}</b>
+                    <span>{x}</span>
+                    <span>{y}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="compare-trust">
+                <span className="eyebrow">SOURCE BASIS</span>
+                <p>Specifications above come from the catalog records for these two models. A field marked “Not listed in source” means the cited source did not provide that value; it is not estimated.</p>
+              </div>
+
+              <div className="action-row">
+                <Link href={`/compare?a=${encodeURIComponent(left.slug)}`} className="button button-outline">Keep {left.model ?? "Model A"}</Link>
+                <Link href={`/compare?a=${encodeURIComponent(right.slug)}&b=${encodeURIComponent(left.slug)}`} className="button button-outline">Swap models</Link>
+              </div>
+            </>
+          ) : (
+            <div className="empty-panel compare-help">
+              <span className="eyebrow">START HERE</span>
+              <h2>Select two real products to compare.</h2>
+              <p>The catalog currently contains source-backed product records with model, capacity, power, temperature, dimensions, weight and other specifications where the sources publish them.</p>
+            </div>
+          )}
+        </div>
+      </section>
+      <SiteFooter />
+    </main>
+  );
 }
