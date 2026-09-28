@@ -73,25 +73,25 @@ export default async function ComparePage({
   }
   const rightSlug = b ?? suggestedSlug;
   const right = rightSlug ? await getProductBySlug(rightSlug) : null;
-  const comparing = Boolean(left && right && left.slug !== right.slug);
+  const comparison = left && right && left.slug !== right.slug ? { a: left, b: right } : null;
 
-  const rows: Array<[string, string, string]> = comparing
+  const rows: Array<[string, string, string]> = comparison
     ? [
-        ["Brand", value(left.brand_name), value(right.brand_name)],
-        ["Model", value(left.model), value(right.model)],
-        ["Capacity", left.capacity_quart != null ? `${left.capacity_quart} qt` : value(null), right.capacity_quart != null ? `${right.capacity_quart} qt` : value(null)],
-        ["Capacity liters", left.capacity_liters != null ? `${left.capacity_liters} L` : value(null), right.capacity_liters != null ? `${right.capacity_liters} L` : value(null)],
-        ["Power", left.wattage != null ? `${left.wattage} W` : value(null), right.wattage != null ? `${right.wattage} W` : value(null)],
-        ["Temperature", temperature(left), temperature(right)],
-        ["Dimensions", dimensions(left.dimensions), dimensions(right.dimensions)],
-        ["Weight", left.weight != null ? `${left.weight} kg` : value(null), right.weight != null ? `${right.weight} kg` : value(null)],
-        ["Basket", value(left.basket_type), value(right.basket_type)],
-        ["Basket count", value(left.basket_count), value(right.basket_count)],
-        ["Controls", left.digital_controls == null ? value(null) : left.digital_controls ? "Digital" : "Manual", right.digital_controls == null ? value(null) : right.digital_controls ? "Digital" : "Manual"],
-        ["Dishwasher safe", value(left.dishwasher_safe), value(right.dishwasher_safe)],
-        ["Rotisserie", value(left.rotisserie), value(right.rotisserie)],
-        ["Verified IDs", String(left.identifiers.length), String(right.identifiers.length)],
-        ["Data completeness", `${completeness(left)}%`, `${completeness(right)}%`],
+        ["Brand", value(comparison.a.brand_name), value(comparison.b.brand_name)],
+        ["Model", value(comparison.a.model), value(comparison.b.model)],
+        ["Capacity", comparison.a.capacity_quart != null ? `${comparison.a.capacity_quart} qt` : value(null), comparison.b.capacity_quart != null ? `${comparison.b.capacity_quart} qt` : value(null)],
+        ["Capacity liters", comparison.a.capacity_liters != null ? `${comparison.a.capacity_liters} L` : value(null), comparison.b.capacity_liters != null ? `${comparison.b.capacity_liters} L` : value(null)],
+        ["Power", comparison.a.wattage != null ? `${comparison.a.wattage} W` : value(null), comparison.b.wattage != null ? `${comparison.b.wattage} W` : value(null)],
+        ["Temperature", temperature(comparison.a), temperature(comparison.b)],
+        ["Dimensions", dimensions(comparison.a.dimensions), dimensions(comparison.b.dimensions)],
+        ["Weight", comparison.a.weight != null ? `${comparison.a.weight} kg` : value(null), comparison.b.weight != null ? `${comparison.b.weight} kg` : value(null)],
+        ["Basket", value(comparison.a.basket_type), value(comparison.b.basket_type)],
+        ["Basket count", value(comparison.a.basket_count), value(comparison.b.basket_count)],
+        ["Controls", comparison.a.digital_controls == null ? value(null) : comparison.a.digital_controls ? "Digital" : "Manual", comparison.b.digital_controls == null ? value(null) : comparison.b.digital_controls ? "Digital" : "Manual"],
+        ["Dishwasher safe", value(comparison.a.dishwasher_safe), value(comparison.b.dishwasher_safe)],
+        ["Rotisserie", value(comparison.a.rotisserie), value(comparison.b.rotisserie)],
+        ["Verified IDs", String(comparison.a.identifiers.length), String(comparison.b.identifiers.length)],
+        ["Data completeness", `${completeness(comparison.a)}%`, `${completeness(comparison.b)}%`],
       ]
     : [];
 
@@ -136,10 +136,10 @@ export default async function ComparePage({
             </div>
           )}
 
-          {comparing ? (
+          {comparison ? (
             <>
               <div className="compare-products">
-                {[left, right].map((p) => {
+                {[comparison.a, comparison.b].map((p) => {
                   const image = getCatalogImage(p.slug, p.image_url);
                   const source = getCatalogSource(p.slug);
                   return (
@@ -173,8 +173,8 @@ export default async function ComparePage({
               <div className="compare-table" role="table" aria-label="Air fryer comparison">
                 <div className="compare-table__head">
                   <b>Specification</b>
-                  <b>{left.model ?? left.title}</b>
-                  <b>{right.model ?? right.title}</b>
+                  <b>{comparison.a.model ?? comparison.a.title}</b>
+                  <b>{comparison.b.model ?? comparison.b.title}</b>
                 </div>
                 {rows.map(([label, x, y]) => (
                   <div className="compare-table__row" key={label}>
@@ -191,8 +191,8 @@ export default async function ComparePage({
               </div>
 
               <div className="action-row">
-                <Link href={`/compare?a=${encodeURIComponent(left.slug)}`} className="button button-outline">Keep {left.model ?? "Model A"}</Link>
-                <Link href={`/compare?a=${encodeURIComponent(right.slug)}&b=${encodeURIComponent(left.slug)}`} className="button button-outline">Swap models</Link>
+                <Link href={`/compare?a=${encodeURIComponent(comparison.a.slug)}`} className="button button-outline">Keep {comparison.a.model ?? "Model A"}</Link>
+                <Link href={`/compare?a=${encodeURIComponent(comparison.b.slug)}&b=${encodeURIComponent(comparison.a.slug)}`} className="button button-outline">Swap models</Link>
               </div>
             </>
           ) : (
