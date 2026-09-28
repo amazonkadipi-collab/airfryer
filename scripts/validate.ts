@@ -18,6 +18,12 @@ export interface RawProduct {
   capacity_quart?: number;
   capacity_liters?: number;
   source: string;
+  product_url?: string;
+  affiliate_url?: string;
+  retailer_name?: string;
+  retailer_domain?: string;
+  retailer_product_id?: string;
+  availability?: string;
 }
 
 export interface ValidationResult {
@@ -51,6 +57,7 @@ export function validateProduct(p: RawProduct): ValidationResult {
     warnings.push(`price out of range: ${p.price}`);
   }
   if (!p.images?.length) warnings.push("no images");
+  if (p.product_url && !/^https?:\/\//i.test(p.product_url)) warnings.push(`product_url is not an absolute URL: ${p.product_url}`);
   if (p.rating !== undefined && (p.rating < 0 || p.rating > 5)) warnings.push(`rating out of range: ${p.rating}`);
   if (p.review_count !== undefined && p.review_count < 0) warnings.push("review_count is negative");
   if (p.dimensions && typeof p.dimensions === "string") warnings.push("dimensions is string, will attempt parse");

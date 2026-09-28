@@ -30,7 +30,7 @@ function pickArray(obj: Record<string, unknown>, ...keys: string[]): string[] {
         if (typeof item === "string") return item;
         if (item && typeof item === "object") {
           const record = item as Record<string, unknown>;
-          return String(record.url ?? record.text ?? "");
+          return String(record.url ?? record.imageUrl ?? record.text ?? "");
         }
         return "";
       }).filter(Boolean);
@@ -56,6 +56,29 @@ function pickPrice(obj: Record<string, unknown>): { value?: number; currency: st
   };
 }
 
+function normalizeUrl(value?: string): string | undefined {
+  if (!value?.trim()) return undefined;
+  const url = value.trim();
+  return /^https?:\/\//i.test(url) ? url : undefined;
+}
+
+function inferRetailer(url?: string): { name?: string; domain?: string } {
+  if (!url) return {};
+  try {
+    const domain = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    const names: Record<string, string> = {
+      "amazon.com": "Amazon",
+      "walmart.com": "Walmart",
+      "target.com": "Target",
+      "lowes.com": "Lowe's",
+      "bestbuy.com": "Best Buy",
+    };
+    return { domain, name: names[domain] ?? domain };
+  } catch {
+    return {};
+  }
+}
+
 interface NormalizedProduct {
   asin?: string;
   upc?: string;
@@ -73,6 +96,12 @@ interface NormalizedProduct {
   dimensions?: string;
   weight?: string;
   source: string;
+  product_url?: string;
+  affiliate_url?: string;
+  retailer_name?: string;
+  retailer_domain?: string;
+  retailer_product_id?: string;
+  availability?: string;
 }
 
 function adapt(raw: Record<string, unknown>): NormalizedProduct | null {
@@ -80,6 +109,8 @@ function adapt(raw: Record<string, unknown>): NormalizedProduct | null {
   if (!title?.trim()) return null;
 
   const { value: price, currency } = pickPrice(raw);
+  const productUrl = normalizeUrl(pick<string>(raw, "productUrl", "productURL", "product_url", "detailPageURL", "detailUrl", "canonicalUrl"));
+  const inferred = inferRetailer(productUrl);
   return {
     asin: pick<string>(raw, "asin", "ASIN", "productAsin"),
     upc: pick<string>(raw, "upc", "UPC", "gtin12"),
@@ -97,6 +128,12 @@ function adapt(raw: Record<string, unknown>): NormalizedProduct | null {
     dimensions: pick<string>(raw, "productDimensions", "dimensions", "itemDimensions", "size"),
     weight: pick<string>(raw, "itemWeight", "weight", "shippingWeight"),
     source: "apify",
+    product_url: productUrl,
+    affiliate_url: normalizeUrl(pick<string>(raw, "affiliateUrl", "affiliateURL", "affiliate_url")),
+    retailer_name: pick<string>(raw, "retailerName", "retailer", "storeName") ?? inferred.name,
+    retailer_domain: pick<string>(raw, "retailerDomain", "retailer_domain") ?? inferred.domain,
+    retailer_product_id: pick<string>(raw, "retailerProductId", "externalProductId", "external_product_id"),
+    availability: pick<string>(raw, "availability", "availabilityStatus", "stock"),
   };
 }
 
@@ -139,11 +176,13 @@ function main() {
     price: adapted.filter((p) => p.price !== undefined).length,
     images: adapted.filter((p) => p.images.length > 0).length,
     features: adapted.filter((p) => p.features.length > 0).length,
+    product_url: adapted.filter((p) => p.product_url).length,
+    retailer: adapted.filter((p) => p.retailer_domain).length,
   };
 
   console.log("📊 Field coverage:");
   for (const [key, count] of Object.entries(coverage)) {
-    console.log(`  ${key.padEnd(10)} ${count}/${adapted.length} (${((count / adapted.length) * 100).toFixed(0)}%)`);
+    console.log(`  ${key.padEnd(12)} ${count}/${adapted.length} (${((count / adapted.length) * 100).toFixed(0)}%)`);
   }
   console.log("📋 Sample:", JSON.stringify(adapted[0], null, 2));
 }

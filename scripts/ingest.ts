@@ -13,16 +13,6 @@ function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70);
 }
 
-async function uniqueSlug(base: string): Promise<string> {
-  const root = slugify(base) || "air-fryer";
-  for (let i = 0; i < 100; i++) {
-    const candidate = i === 0 ? root : `${root}-${i + 1}`;
-    const rows = await sql`SELECT 1 FROM products WHERE slug = ${candidate} LIMIT 1`;
-    if (!rows.length) return candidate;
-  }
-  return `${root}-${Date.now()}`;
-}
-
 function extractModel(title: string, fallback?: string): string | null {
   if (fallback?.trim()) return fallback.trim();
   const m = title.match(/\b([A-Z]{2,}[ -]?\d{2,}[A-Z0-9-]*)\b/i);
@@ -60,17 +50,28 @@ async function ensureBrand(name: string): Promise<number> {
   return Number(rows[0].id);
 }
 
-async function insertProduct(p: RawProduct, brandId: number): Promise<number> {
-  const model = extractModel(p.title, p.model);
-  const slug = await uniqueSlug(`${p.brand || "unknown"}-${model || p.title}`);
+async function findExistingProductId(p: RawProduct, brandId: number, model: string | null, slug: string): Promise<number | null> {
+  const bySlug = await sql`SELECT id FROM products WHERE slug = ${slug} LIMIT 1`;
+  if (bySlug.length) return Number(bySlug[0].id);
+
+  if (model) {
+    const byModel = await sql`
+      SELECT id FROM products
+      WHERE brand_id = ${brandId} AND lower(model) = lower(${model})
+      ORDER BY id ASC LIMIT 1
+    `;
+    if (byModel.length) return Number(byModel[0].id);
+  }
+
+  return null;
+}
+
+async function upsertProduct(p: RawProduct, brandId: number, model: string | null, slug: string): Promise<number> {
   const dimensions = parseDimensions(p.dimensions);
   const capacityQuart = extractCapacityQuart(p.title, p.capacity_quart, p.capacity_liters);
   const wattage = p.wattage ?? extractWattage(p.features, p.title);
   const weight = parseWeight(p.weight);
-
-  // Index only records that pass the minimum identity/completeness gate.
-  // Affiliate offers are intentionally not part of this gate.
-  const hasIdentifier = Boolean(p.asin || p.upc || p.ean);
+  const hasIdentifier = Boolean(p.asin || p.upc || p.ean || model);
   const qualityScore = Math.min(
     100,
     Math.round(
@@ -83,6 +84,28 @@ async function insertProduct(p: RawProduct, brandId: number): Promise<number> {
     ),
   );
   const indexable = qualityScore >= 70 && hasIdentifier && Boolean(model) && Boolean(p.brand);
+  const existingId = await findExistingProductId(p, brandId, model, slug);
+
+  if (existingId) {
+    const rows = await sql`
+      UPDATE products
+      SET
+        title = ${p.title.trim()},
+        model = COALESCE(${model}, model),
+        brand_id = COALESCE(${brandId}, brand_id),
+        capacity_quart = COALESCE(${capacityQuart}, capacity_quart),
+        capacity_liters = COALESCE(${p.capacity_liters ?? null}, capacity_liters),
+        wattage = COALESCE(${wattage}, wattage),
+        dimensions = COALESCE(${dimensions ? JSON.stringify(dimensions) : null}::jsonb, dimensions),
+        weight = COALESCE(${weight}, weight),
+        quality_score = GREATEST(COALESCE(quality_score, 0), ${qualityScore}),
+        indexable = indexable OR ${indexable},
+        updated_at = NOW()
+      WHERE id = ${existingId}
+      RETURNING id
+    `;
+    return Number(rows[0].id);
+  }
 
   const rows = await sql`
     INSERT INTO products (
@@ -93,7 +116,7 @@ async function insertProduct(p: RawProduct, brandId: number): Promise<number> {
       ${slug}, ${brandId}, ${model}, ${p.title.trim()},
       ${capacityQuart}, ${p.capacity_liters ?? null}, ${wattage},
       ${dimensions ? JSON.stringify(dimensions) : null}::jsonb, ${weight},
-      'active', 'draft', 'source', NULL, false, false,
+      'active', 'draft', ${p.source}, NULL, false, false,
       ${qualityScore}, ${indexable}
     )
     RETURNING id
@@ -101,42 +124,111 @@ async function insertProduct(p: RawProduct, brandId: number): Promise<number> {
   return Number(rows[0].id);
 }
 
-async function insertIdentifiers(productId: number, p: RawProduct): Promise<void> {
+async function insertIdentifiers(productId: number, p: RawProduct, model: string | null): Promise<number> {
   const ids: Array<[string, string]> = [];
   if (p.asin) ids.push(["ASIN", p.asin.trim().toUpperCase()]);
   if (p.upc) ids.push(["UPC", p.upc.replace(/\D/g, "")]);
   if (p.ean) ids.push(["EAN", p.ean.replace(/\D/g, "")]);
-  if (p.model) ids.push(["MPN", p.model.trim()]);
+  if (model) ids.push(["MPN", model.trim()]);
 
+  let inserted = 0;
   for (const [type, value] of ids) {
     if (!value) continue;
-    await sql`
+    const rows = await sql`
       INSERT INTO product_identifiers (product_id, identifier_type, identifier_value, source, verified)
-      VALUES (${productId}, ${type}, ${value}, ${p.source}, false)
-      ON CONFLICT (identifier_type, identifier_value) DO NOTHING
+      SELECT ${productId}, ${type}, ${value}, ${p.source}, false
+      WHERE NOT EXISTS (
+        SELECT 1 FROM product_identifiers
+        WHERE identifier_type = ${type} AND identifier_value = ${value}
+      )
+      RETURNING id
     `;
+    if (rows.length) inserted++;
   }
+  return inserted;
 }
 
-async function insertImages(productId: number, p: RawProduct): Promise<void> {
+async function insertImages(productId: number, p: RawProduct): Promise<number> {
+  let inserted = 0;
   for (const [i, url] of (p.images ?? []).slice(0, 8).entries()) {
     if (!/^https?:\/\//i.test(url)) continue;
-    await sql`
+    const rows = await sql`
       INSERT INTO product_images (product_id, image_url, source, licensed, sort_order)
-      VALUES (${productId}, ${url}, ${p.source}, false, ${i})
+      SELECT ${productId}, ${url}, ${p.source}, false, ${i}
+      WHERE NOT EXISTS (
+        SELECT 1 FROM product_images
+        WHERE product_id = ${productId} AND image_url = ${url}
+      )
+      RETURNING id
     `;
+    if (rows.length) inserted++;
   }
+  return inserted;
 }
 
-async function insertFeatures(productId: number, p: RawProduct): Promise<void> {
+async function insertFeatures(productId: number, p: RawProduct): Promise<number> {
+  let inserted = 0;
   for (const feature of (p.features ?? []).slice(0, 30)) {
     const text = feature.trim();
     if (!text) continue;
-    await sql`
+    const rows = await sql`
       INSERT INTO product_features (product_id, feature_key, feature_value, source, verified)
-      VALUES (${productId}, 'feature', ${text}, ${p.source}, false)
+      SELECT ${productId}, 'feature', ${text}, ${p.source}, false
+      WHERE NOT EXISTS (
+        SELECT 1 FROM product_features
+        WHERE product_id = ${productId} AND feature_key = 'feature' AND feature_value = ${text}
+      )
+      RETURNING id
     `;
+    if (rows.length) inserted++;
   }
+  return inserted;
+}
+
+function retailerDomain(url?: string): string | null {
+  if (!url) return null;
+  try {
+    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    return hostname || null;
+  } catch {
+    return null;
+  }
+}
+
+async function ensureRetailer(name: string, domain: string): Promise<number> {
+  const rows = await sql`
+    INSERT INTO retailers (name, domain)
+    VALUES (${name.trim() || domain}, ${domain})
+    ON CONFLICT (domain) DO UPDATE SET name = COALESCE(NULLIF(EXCLUDED.name, ''), retailers.name)
+    RETURNING id
+  `;
+  return Number(rows[0].id);
+}
+
+async function insertRetailerOffer(productId: number, p: RawProduct): Promise<boolean> {
+  if (!p.product_url || p.price == null || !Number.isFinite(p.price) || p.price <= 0) return false;
+  const domain = p.retailer_domain || retailerDomain(p.product_url);
+  if (!domain) return false;
+  const retailer = await ensureRetailer(p.retailer_name || domain, domain);
+
+  const rows = await sql`
+    INSERT INTO product_retailers (
+      product_id, retailer_id, external_product_id, url, affiliate_url,
+      price, currency, availability, last_checked_at
+    )
+    SELECT
+      ${productId}, ${retailer}, ${p.retailer_product_id ?? null},
+      ${p.product_url}, ${p.affiliate_url ?? null},
+      ${p.price}, ${p.currency ?? "USD"}, ${p.availability ?? null}, NOW()
+    WHERE NOT EXISTS (
+      SELECT 1 FROM product_retailers
+      WHERE product_id = ${productId}
+        AND retailer_id = ${retailer}
+        AND COALESCE(url, '') = COALESCE(${p.product_url}, '')
+    )
+    RETURNING id
+  `;
+  return rows.length > 0;
 }
 
 async function ingestFile(filePath: string): Promise<void> {
@@ -144,23 +236,42 @@ async function ingestFile(filePath: string): Promise<void> {
   const products: RawProduct[] = Array.isArray(raw) ? raw : Array.isArray(raw?.items) ? raw.items : [];
   if (!products.length) throw new Error("Input JSON contains no products");
 
-  const stats = { total: products.length, inserted: 0, duplicate: 0, invalid: 0, failed: 0 };
+  const stats = { total: products.length, inserted: 0, updated: 0, invalid: 0, duplicate: 0, failed: 0, images: 0, identifiers: 0, features: 0, offers: 0 };
 
   for (const [index, product] of products.entries()) {
     const prefix = `[${index + 1}/${products.length}]`;
     try {
       const validation = validateProduct(product);
-      if (!validation.valid) { console.warn(prefix, "INVALID", validation.errors.join("; ")); stats.invalid++; continue; }
-      const duplicate = await findDuplicate(product);
-      if (duplicate.isDuplicate) { console.log(prefix, "DUPLICATE", duplicate.matchedBy); stats.duplicate++; continue; }
+      if (!validation.valid) {
+        console.warn(prefix, "INVALID", validation.errors.join("; "));
+        stats.invalid++;
+        continue;
+      }
 
       const brandId = await ensureBrand(product.brand || "Unknown");
-      const productId = await insertProduct(product, brandId);
-      await insertIdentifiers(productId, product);
-      await insertImages(productId, product);
-      await insertFeatures(productId, product);
-      stats.inserted++;
-      console.log(prefix, "OK", productId, product.title.slice(0, 70));
+      const model = extractModel(product.title, product.model);
+      const slug = slugify(`${product.brand || "unknown"}-${model || product.title}`) || "air-fryer";
+      const existingBefore = await findExistingProductId(product, brandId, model, slug);
+
+      if (!existingBefore) {
+        const duplicate = await findDuplicate(product);
+        if (duplicate.isDuplicate) {
+          console.log(prefix, "DUPLICATE", duplicate.matchedBy);
+          stats.duplicate++;
+          continue;
+        }
+      }
+
+      const productId = await upsertProduct(product, brandId, model, slug);
+      if (existingBefore) stats.updated++;
+      else stats.inserted++;
+
+      stats.identifiers += await insertIdentifiers(productId, product, model);
+      stats.images += await insertImages(productId, product);
+      stats.features += await insertFeatures(productId, product);
+      if (await insertRetailerOffer(productId, product)) stats.offers++;
+
+      console.log(prefix, existingBefore ? "UPDATED" : "INSERTED", productId, product.title.slice(0, 70));
     } catch (error) {
       stats.failed++;
       console.error(prefix, "FAILED", error instanceof Error ? error.message : error);
