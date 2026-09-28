@@ -23,22 +23,14 @@ export default async function HomePage() {
       <SiteHeader />
       <section className="hero">
         <div className="shell">
-          <span className="eyebrow"><span className="live-dot" /> YOUR LITTLE AIR-FRYER GUIDE</span>
-          <h1 className="hero__title">Find an air fryer you’ll love. ♡</h1>
+          <span className="eyebrow"><span className="live-dot" /> PRODUCT INTELLIGENCE</span>
+          <h1 className="hero__title">Find the right air fryer.</h1>
           <p className="hero__sub">
             Search real models, compare specifications, and check product identifiers.
             No filler. No invented data.
           </p>
           <form action="/search" method="get" className="search-box hero__search">
-            <input
-              type="search"
-              name="q"
-              required
-              minLength={2}
-              autoComplete="off"
-              aria-label="Search air fryers"
-              placeholder="Model, brand, ASIN, UPC or EAN"
-            />
+            <input type="search" name="q" required minLength={2} autoComplete="off" aria-label="Search air fryers" placeholder="Model, brand, ASIN, UPC or EAN" />
             <button type="submit">Search</button>
           </form>
           <div className="quick-links">
@@ -54,7 +46,7 @@ export default async function HomePage() {
         <section className="section">
           <div className="shell">
             <div className="section-head">
-              <div><span className="eyebrow">♡ POPULAR PICKS</span><h2>Pretty little picks for your kitchen</h2></div>
+              <div><span className="eyebrow">POPULAR MODELS</span><h2>Popular air fryer models</h2></div>
               <Link href="/air-fryers">Browse all →</Link>
             </div>
             <div className="product-grid">
@@ -67,16 +59,17 @@ export default async function HomePage() {
       <section className="section">
         <div className="shell">
           <div className="section-head">
-            <div><span className="eyebrow">♡ FIND YOUR FIT</span><h2>Choose the size that feels right</h2></div>
+            <div><span className="eyebrow">BROWSE BY CAPACITY</span><h2>Find the right size</h2></div>
           </div>
           <div className="capacity-grid">
-            {capacities.map(([label, description]) => (
-              <Link href={`/search?q=${encodeURIComponent(label)}`} className="capacity-card" key={label}>
+            {capacities.map(([label, description]) => {
+              const href = label === "6 qt" ? "/air-fryers/6-quart" : "/search?q=" + encodeURIComponent(label);
+              return <Link href={href} className="capacity-card" key={label}>
                 <strong>{label}</strong>
                 <span>{description}</span>
                 <i>Explore models →</i>
-              </Link>
-            ))}
+              </Link>;
+            })}
           </div>
         </div>
       </section>
@@ -85,12 +78,12 @@ export default async function HomePage() {
         <section className="section">
           <div className="shell">
             <div className="section-head">
-              <div><span className="eyebrow">♡ FAVORITE BRANDS</span><h2>Shop by brand</h2></div>
+              <div><span className="eyebrow">BROWSE BY BRAND</span><h2>Air fryer brands</h2></div>
               <Link href="/brands">All brands →</Link>
             </div>
             <div className="product-grid">
               {brands.slice(0, 8).map((brand) => (
-                <Link href={`/search?q=${encodeURIComponent(brand.name)}`} className="capacity-card" key={brand.slug}>
+                <Link href={"/search?q=" + encodeURIComponent(brand.name)} className="capacity-card" key={brand.slug}>
                   <strong>{brand.name}</strong>
                   <span>{brand.product_count} {brand.product_count === 1 ? "model" : "models"} in catalog</span>
                   <i>View models →</i>
@@ -104,7 +97,7 @@ export default async function HomePage() {
       <section className="section">
         <div className="shell">
           <div className="section-head">
-            <div><span className="eyebrow">HOW IT WORKS</span><h2>Google search → product intelligence</h2></div>
+            <div><span className="eyebrow">HOW IT WORKS</span><h2>From search to product intelligence</h2></div>
           </div>
           <div className="product-grid">
             <div className="empty-panel"><span className="eyebrow">01 IDENTIFY</span><h2>Find the exact model.</h2><p>Search by model, title, brand, or verified product identifier.</p></div>
