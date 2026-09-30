@@ -98,7 +98,7 @@ export default async function ComparePage({
   return (
     <main>
       <SiteHeader />
-      <section className="section compare-page">
+      <section className="section compare-page" data-page="real-comparison">
         <div className="shell">
           <span className="eyebrow">COMPARE · SIDE BY SIDE</span>
           <h1 className="page-title">Compare air fryers using real catalog data.</h1>
