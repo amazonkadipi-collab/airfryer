@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getDb } from "@/lib/db";
 
 type SitemapProduct = { slug: string; updated_at: string };
+type SitemapComparison = { slug: string; updated_at: string };
 
 function getBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -35,8 +36,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       FROM products
       WHERE status = 'active' AND indexable = true
       ORDER BY updated_at DESC
-      LIMIT 5000
+      LIMIT 45000
     `) as SitemapProduct[];
+
+    const comparisons = (await db`
+      SELECT slug, updated_at
+      FROM comparisons
+      WHERE status = 'published' AND COALESCE(quality_score, 0) >= 80
+      ORDER BY updated_at DESC
+      LIMIT 5000
+    `) as SitemapComparison[];
 
     return [
       ...staticPages,
@@ -45,6 +54,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(product.updated_at),
         changeFrequency: "weekly" as const,
         priority: 0.7,
+      })),
+      ...comparisons.map((comparison) => ({
+        url: `${baseUrl}/compare/${comparison.slug}`,
+        lastModified: new Date(comparison.updated_at),
+        changeFrequency: "weekly" as const,
+        priority: 0.75,
       })),
     ];
   } catch {
