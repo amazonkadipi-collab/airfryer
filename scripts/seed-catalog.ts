@@ -191,6 +191,12 @@ const catalog: CatalogItem[] = [
       { type: "MPN", value: "RJ38-SS-6T-V2", verified: true, source: "web:chefman.com" }
     ],
   },
+  {
+    slug: "ninja-af141-5-quart", brand: "Ninja", model: "AF141", title: "Ninja Air Fryer Pro 5-Quart",
+    capacityQuart: 5, basketType: "single basket", basketCount: 1, wattage: 1750, dishwasherSafe: true, temperatureMin: 105, temperatureMax: 400,
+    dimensions: { length_in: 14.84, width_in: 11.34, height_in: 10.55 }, weightKg: 4.84,
+    imageUrl: "https://etsound.com.sg/cdn/shop/files/1_1327bfea-6475-4dd0-b354-ab7969bde52b.png?v=1744084540&width=1214", imageSource: "etsound.com.sg", sourceUrl: "https://www.sharkninja.com/ninja-air-fryer-pro-4-in-1/AF141.html",
+  },
 ];
 
 async function ensureBrand(name: string) {
