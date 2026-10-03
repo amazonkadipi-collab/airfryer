@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "if [ -n \"$DATABASE_URL\" ]; then npm run seed:catalog; fi && next build",
     "start": "next start",
     "lint": "eslint .",
     "fetch:apify": "tsx scripts/fetch-apify.ts",
