@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/apify-start",
       "schedule": "15 3 * * *"
+    },
+    {
+      "path": "/api/cron/amazon-prices",
+      "schedule": "45 3 * * *"
     }
   ]
 }
