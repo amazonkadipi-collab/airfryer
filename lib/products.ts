@@ -33,7 +33,7 @@ export type ProductRecord = ProductSearchRow & {
   conflict_flag: boolean;
   image_url: string | null;
   identifiers: Array<{ identifier_type: string; identifier_value: string }>;
-  offers: Array<{ retailer_slug: string; retailer_name: string; price: number | null; currency: string | null; url: string | null; affiliate_url: string | null; availability: string | null; last_checked_at: string | null }>;
+  offers: Array<{ retailer_slug: string; retailer_name: string; external_product_id: string | null; price: number | null; currency: string | null; url: string | null; affiliate_url: string | null; availability: string | null; last_checked_at: string | null }>;
 };
 
 export async function getBrands(): Promise<Array<{ slug: string; name: string; product_count: number }>> {
@@ -99,7 +99,7 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
       (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.licensed DESC, pi.sort_order ASC LIMIT 1) AS image_url,
       COALESCE((SELECT json_agg(json_build_object('identifier_type', i.identifier_type, 'identifier_value', i.identifier_value) ORDER BY i.identifier_type)
         FROM product_identifiers i WHERE i.product_id = p.id AND i.verified = true), '[]'::json) AS identifiers,
-      COALESCE((SELECT json_agg(json_build_object('retailer_slug', r.domain, 'retailer_name', r.name, 'price', pr.price, 'currency', pr.currency, 'url', pr.url, 'affiliate_url', pr.affiliate_url, 'availability', pr.availability, 'last_checked_at', pr.last_checked_at) ORDER BY pr.price NULLS LAST)
+      COALESCE((SELECT json_agg(json_build_object('retailer_slug', r.domain, 'retailer_name', r.name, 'external_product_id', pr.external_product_id, 'price', pr.price, 'currency', pr.currency, 'url', pr.url, 'affiliate_url', pr.affiliate_url, 'availability', pr.availability, 'last_checked_at', pr.last_checked_at) ORDER BY pr.price NULLS LAST)
         FROM product_retailers pr JOIN retailers r ON r.id = pr.retailer_id
         WHERE pr.product_id = p.id AND pr.availability = 'in_stock' AND pr.affiliate_url IS NOT NULL), '[]'::json) AS offers
     FROM products p LEFT JOIN brands b ON b.id = p.brand_id
