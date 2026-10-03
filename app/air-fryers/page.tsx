@@ -14,8 +14,12 @@ export const metadata: Metadata = {
 
 const filters = ["Compact", "4 Quart", "6 Quart", "8 Quart", "10+ Quart", "Dual Basket", "Dishwasher Safe", "Rotisserie"];
 
-export default async function AirFryersPage() {
-  const products = await getFeaturedProducts(100);
+export default async function AirFryersPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const params = await searchParams;
+  const requestedPage = Number.parseInt(params.page ?? "1", 10);
+  const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const pageSize = 50;
+  const products = await getFeaturedProducts(pageSize, (page - 1) * pageSize);
 
   return (
     <main>
@@ -36,6 +40,11 @@ export default async function AirFryersPage() {
             <div className="product-grid">
               {products.map(product => <ProductCard key={product.slug} product={product} />)}
             </div>
+            <nav className="catalog-pagination" aria-label="Catalog pagination">
+              {page > 1 ? <Link className="button light" href={`/air-fryers?page=${page - 1}`}>← Previous</Link> : <span />}
+              <span>Page {page}</span>
+              {products.length === pageSize ? <Link className="button" href={`/air-fryers?page=${page + 1}`}>Next →</Link> : <span />}
+            </nav>
           </section>
         ) : (
           <div className="empty-panel"><span className="eyebrow">DATA PIPELINE</span><h2>The catalog is being connected to live product data.</h2><p>Products will appear as structured records become available.</p></div>
