@@ -73,18 +73,23 @@ export async function searchProducts(query: string): Promise<ProductSearchRow[]>
   const db = getDb();
   if (!db || !query.trim()) return [];
   const q = query.trim();
+  const capacityMatch = q.match(/^(\d+(?:\.\d+)?)\s*(?:qt|qts|quart|quarts)$/i);
+  const capacityQuart = capacityMatch ? Number(capacityMatch[1]) : null;
   const rows = await db`
     SELECT p.id, p.slug, p.title, p.model, b.name AS brand_name, p.capacity_quart, p.quality_score,
+      p.basket_type, p.basket_count, p.digital_controls,
       (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.licensed DESC, pi.sort_order ASC LIMIT 1) AS image_url,
       (CASE WHEN lower(coalesce(p.model, '')) = lower(${q}) THEN 100 ELSE 0 END +
        CASE WHEN lower(p.title) = lower(${q}) THEN 90 ELSE 0 END +
        CASE WHEN lower(coalesce(b.name, '')) = lower(${q}) THEN 80 ELSE 0 END +
+       CASE WHEN ${capacityQuart}::numeric IS NOT NULL AND p.capacity_quart IS NOT NULL AND abs(p.capacity_quart - ${capacityQuart}::numeric) < 0.01 THEN 120 ELSE 0 END +
        CASE WHEN lower(p.title) LIKE '%' || lower(${q}) || '%' THEN 45 ELSE 0 END +
        CASE WHEN lower(coalesce(p.model, '')) LIKE '%' || lower(${q}) || '%' THEN 55 ELSE 0 END +
        similarity(p.title, ${q}) * 35 + similarity(coalesce(p.model, ''), ${q}) * 30 +
        similarity(coalesce(b.name, ''), ${q}) * 20) AS match_score
     FROM products p LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.status = 'active' AND (
+      (${capacityQuart}::numeric IS NOT NULL AND p.capacity_quart IS NOT NULL AND abs(p.capacity_quart - ${capacityQuart}::numeric) < 0.01) OR
       lower(p.title) LIKE '%' || lower(${q}) || '%' OR lower(coalesce(p.model, '')) LIKE '%' || lower(${q}) || '%' OR
       lower(coalesce(b.name, '')) LIKE '%' || lower(${q}) || '%' OR similarity(p.title, ${q}) > 0.18 OR
       similarity(coalesce(p.model, ''), ${q}) > 0.25 OR similarity(coalesce(b.name, ''), ${q}) > 0.25 OR
@@ -108,7 +113,11 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
         FROM product_identifiers i WHERE i.product_id = p.id AND i.verified = true), '[]'::json) AS identifiers,
       COALESCE((SELECT json_agg(json_build_object('retailer_slug', r.domain, 'retailer_name', r.name, 'external_product_id', pr.external_product_id, 'price', pr.price, 'currency', pr.currency, 'url', pr.url, 'affiliate_url', pr.affiliate_url, 'availability', pr.availability, 'last_checked_at', pr.last_checked_at) ORDER BY pr.price NULLS LAST)
         FROM product_retailers pr JOIN retailers r ON r.id = pr.retailer_id
-        WHERE pr.product_id = p.id AND pr.affiliate_url IS NOT NULL), '[]'::json) AS offers
+        WHERE pr.product_id = p.id AND pr.affiliate_url IS NOT NULL
+          AND pr.id = (
+            SELECT MAX(pr2.id) FROM product_retailers pr2
+            WHERE pr2.product_id = pr.product_id AND pr2.retailer_id = pr.retailer_id
+          )), '[]'::json) AS offers
     FROM products p LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.slug = ${slug} AND p.status = 'active' LIMIT 1
   `;
