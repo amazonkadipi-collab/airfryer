@@ -49,7 +49,7 @@ export default async function HomePage() {
       <section className="intel-hero">
         <div className="shell">
           <div className="intel-hero__eyebrow">AIR FRYER INTELLIGENCE</div>
-          <h1>Air fryer reviews,<br /><span>specs & comparisons.</span></h1>
+          <h1>Air fryer models,<br /><span>specs & comparisons.</span></h1>
           <p>Search real models, check the specifications that matter, and compare products before you buy.</p>
           <form action="/search" method="get" className="intel-search">
             <span aria-hidden="true">⌕</span>
@@ -70,7 +70,7 @@ export default async function HomePage() {
         <div className="shell intel-stats__grid">
           <div><b>{catalogCount}</b><span>catalog models</span></div>
           <div><b>{brands.length}</b><span>brands</span></div>
-          <div><b>5</b><span>capacity groups</span></div>
+          <div><b>5</b><span>browse sizes</span></div>
           <div><b>1</b><span>product catalog</span></div>
         </div>
       </section>
@@ -142,7 +142,7 @@ export default async function HomePage() {
           <div className="intel-method__grid">
             <div>
               <span className="eyebrow">ABOUT THE DATA</span>
-              <h2>Product information first.</h2>
+              <h2>Product data, clearly sourced.</h2>
               <p>Air Fryer Intelligence is built around model-level product data: names, identifiers, capacity, basket configuration, specifications and retailer availability when verified.</p>
             </div>
             <div className="intel-method__links">
