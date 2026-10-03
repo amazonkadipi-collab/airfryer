@@ -58,7 +58,7 @@ export async function getFeaturedProducts(limit = 12, offset = 0): Promise<Produ
     LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.status = 'active' AND p.indexable = true
     ORDER BY p.quality_score DESC NULLS LAST, p.updated_at DESC, p.title ASC
-    LIMIT ${limit}
+    LIMIT ${limit} OFFSET ${offset}
   `;
   return rows as unknown as ProductSearchRow[];
 }
