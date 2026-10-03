@@ -1,19 +1,65 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getBrands, getFeaturedProducts } from "@/lib/products";
+import { getBrands, getCatalogCount, getFeaturedProducts, type ProductSearchRow } from "@/lib/products";
 
 const capacities = [
-  ["4 qt", "Small & quick", "/search?q=4+qt"],
-  ["5 qt", "Everyday sweet spot", "/search?q=5+qt"],
-  ["6 qt", "Most popular", "/air-fryers/6-quart"],
-  ["8 qt", "Family cooking", "/search?q=8+qt"],
+  ["4 qt", "Small", "/search?q=4+qt"],
+  ["5 qt", "Everyday", "/search?q=5+qt"],
+  ["6 qt", "Popular", "/air-fryers/6-quart"],
+  ["8 qt", "Family", "/search?q=8+qt"],
   ["10+ qt", "Big batches", "/search?q=10+qt"],
 ];
 
+function FeaturedVisual({ product }: { product: ProductSearchRow }) {
+  return (
+    <div className="home-featured" aria-label={product.title}>
+      <div className="home-featured__decor home-featured__decor--one" />
+      <div className="home-featured__decor home-featured__decor--two" />
+      <div className="home-featured__top">
+        <span className="eyebrow">FEATURED FROM THE CATALOG</span>
+        <span className="home-live"><i /> live catalog</span>
+      </div>
+      <Link href={"/products/" + product.slug} className="home-featured__product">
+        <div className="home-featured__image">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.title}
+              width={460}
+              height={460}
+              sizes="(max-width: 900px) 62vw, 430px"
+              priority
+            />
+          ) : (
+            <div className="home-featured__placeholder">AF</div>
+          )}
+        </div>
+        <div className="home-featured__info">
+          <span className="home-featured__brand">{product.brand_name ?? "Air fryer"}</span>
+          <h2>{product.title}</h2>
+          <p>{product.model ? `Model: ${product.model}` : "Model details"}{product.capacity_quart ? ` · ${product.capacity_quart} qt` : ""}{product.basket_type ? ` · ${product.basket_type}` : ""}</p>
+          <span className="home-featured__link">Open product →</span>
+        </div>
+      </Link>
+      <div className="home-featured__signal">
+        <span><b>{product.capacity_quart ? product.capacity_quart + " qt" : "—"}</b><small>capacity</small></span>
+        <span><b>{product.basket_count ?? "—"}</b><small>baskets</small></span>
+        <span><b>{product.model ? "Model" : "Specs"}</b><small>identifier</small></span>
+      </div>
+    </div>
+  );
+}
+
 export default async function HomePage() {
-  const [products, brands] = await Promise.all([getFeaturedProducts(8), getBrands()]);
+  const [products, brands, catalogCount] = await Promise.all([
+    getFeaturedProducts(7),
+    getBrands(),
+    getCatalogCount(),
+  ]);
+  const featured = products[0];
 
   return (
     <main className="home">
@@ -22,54 +68,60 @@ export default async function HomePage() {
       <section className="home-hero">
         <div className="shell home-hero__grid">
           <div className="home-hero__copy">
-            <div className="hero-badge"><span className="live-dot" /> REAL PRODUCT DATA · NO FILLER</div>
-            <h1>Air fryers,<br /><em>made simple.</em></h1>
-            <p>Find a real model, understand the specs, compare options, and jump to the retailer in a few clicks.</p>
+            <div className="hero-badge"><span className="live-dot" /> AIR FRYER PRODUCT INTELLIGENCE</div>
+            <h1>Find the right<br /><em>air fryer.</em></h1>
+            <p>Search real models, check the important specs, compare options, and follow the retailer link when one is available.</p>
 
             <form action="/search" method="get" className="home-search">
               <span aria-hidden="true">⌕</span>
-              <input type="search" name="q" required minLength={2} autoComplete="off" aria-label="Search air fryers" placeholder="Search model, brand, ASIN, UPC…" />
+              <input type="search" name="q" required minLength={2} autoComplete="off" aria-label="Search air fryers" placeholder="Model, brand, ASIN or UPC…" />
               <button type="submit">Search</button>
             </form>
 
             <div className="home-quick">
-              <span>Popular:</span>
+              <span>Try:</span>
               <Link href="/search?q=Ninja+AF141">Ninja AF141</Link>
               <Link href="/search?q=COSORI">COSORI</Link>
               <Link href="/search?q=dual+basket">Dual basket</Link>
             </div>
+
+            <div className="home-mini-stats">
+              <span><b>{catalogCount}</b><small>catalog models</small></span>
+              <span><b>{brands.length}</b><small>brands</small></span>
+              <span><b>5</b><small>size paths</small></span>
+            </div>
           </div>
 
-          <div className="home-visual" aria-hidden="true">
-            <div className="home-orbit home-orbit--one" />
-            <div className="home-orbit home-orbit--two" />
-            <div className="home-machine">
-              <div className="machine-glow" />
-              <div className="machine-top"><span>AF</span><i /></div>
-              <div className="machine-body"><div className="machine-screen">185°</div><div className="machine-dial" /></div>
-              <div className="machine-basket"><span>READY</span></div>
+          {featured ? <FeaturedVisual product={featured} /> : (
+            <div className="home-featured home-featured--empty">
+              <span className="eyebrow">AIR FRYER CATALOG</span>
+              <h2>Search the catalog</h2>
+              <p>Browse models, brands and product specifications.</p>
+              <Link href="/air-fryers" className="button">Browse models →</Link>
             </div>
-            <div className="float-card float-card--score"><b>98</b><span>data score</span><i>● verified fields</i></div>
-            <div className="float-card float-card--size"><b>6 qt</b><span>popular size</span><strong>↗</strong></div>
-            <div className="float-card float-card--pulse"><span>LIVE CATALOG</span><b>35+ models</b><div className="mini-bars"><i /><i /><i /><i /><i /></div></div>
-          </div>
+          )}
         </div>
       </section>
 
       <section className="home-strip">
         <div className="shell home-strip__inner">
-          <span><b>35+</b> catalog models</span><span><b>8</b> popular picks</span><span><b>5</b> size paths</span><span><b>1</b> focused category</span>
+          <Link href="/air-fryers"><b>Browse</b><span>all models →</span></Link>
+          <Link href="/compare"><b>Compare</b><span>two models →</span></Link>
+          <Link href="/brands"><b>Brands</b><span>explore makers →</span></Link>
+          <Link href="/search"><b>Search</b><span>find a model →</span></Link>
         </div>
       </section>
 
-      {products.length > 0 && (
+      {products.length > 1 && (
         <section className="section home-section">
           <div className="shell">
             <div className="section-head">
-              <div><span className="eyebrow">START HERE</span><h2>Popular models</h2></div>
-              <Link href="/air-fryers">See all models →</Link>
+              <div><span className="eyebrow">CURATED FROM THE CATALOG</span><h2>Popular models</h2></div>
+              <Link href="/air-fryers">See all {catalogCount} →</Link>
             </div>
-            <div className="product-grid home-products">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div>
+            <div className="product-grid home-products">
+              {products.slice(1, 7).map((product) => <ProductCard key={product.slug} product={product} />)}
+            </div>
           </div>
         </section>
       )}
@@ -79,8 +131,8 @@ export default async function HomePage() {
           <div className="finder-card">
             <div className="finder-copy">
               <span className="eyebrow">QUICK FINDER</span>
-              <h2>How much air fryer do you actually need?</h2>
-              <p>Pick a size and go straight to matching models. No quiz, no clutter.</p>
+              <h2>Start with the size.</h2>
+              <p>Jump straight to models that match the capacity you need.</p>
             </div>
             <div className="finder-options">
               {capacities.map(([label, description, href]) => (
@@ -114,13 +166,13 @@ export default async function HomePage() {
       <section className="section home-how">
         <div className="shell">
           <div className="how-head">
-            <div><span className="eyebrow">THE SIMPLE WAY</span><h2>Search → understand → choose</h2></div>
+            <div><span className="eyebrow">HOW IT WORKS</span><h2>Less scrolling. More clarity.</h2></div>
             <Link href="/compare" className="button light">Compare models</Link>
           </div>
           <div className="how-grid">
-            <div><b>01</b><span>SEARCH</span><h3>Find your exact model</h3><p>Search by name, model number or product identifier.</p></div>
-            <div><b>02</b><span>CHECK</span><h3>See the useful details</h3><p>Capacity, basket type, power and available identifiers in one view.</p></div>
-            <div><b>03</b><span>COMPARE</span><h3>Make the shortlist</h3><p>Put two real models side by side before you buy.</p></div>
+            <div><b>01</b><span>SEARCH</span><h3>Find the model</h3><p>Search by name, model number or product identifier.</p></div>
+            <div><b>02</b><span>CHECK</span><h3>Read the useful specs</h3><p>Capacity, basket type, power and identifiers in one place.</p></div>
+            <div><b>03</b><span>CHOOSE</span><h3>Compare before buying</h3><p>Put real models side by side and open the available retailer link.</p></div>
           </div>
         </div>
       </section>
