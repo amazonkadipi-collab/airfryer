@@ -47,38 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             AND upper(ai.identifier_type) = 'ASIN'
             AND ai.verified = true
             AND char_length(trim(ai.identifier_value)) = 10
-            AND ai.identifier_value ~ '^[A-Za-z0-9]+
-      LIMIT 45000
-    `) as SitemapProduct[];
-
-    const comparisons = (await db`
-      SELECT slug, updated_at
-      FROM comparisons
-      WHERE status = 'published' AND COALESCE(quality_score, 0) >= 80
-      ORDER BY updated_at DESC
-      LIMIT 5000
-    `) as SitemapComparison[];
-
-    return [
-      ...staticPages,
-      ...products.map((product) => ({
-        url: `${baseUrl}/products/${product.slug}`,
-        lastModified: new Date(product.updated_at),
-        changeFrequency: "weekly" as const,
-        priority: 0.7,
-      })),
-      ...comparisons.map((comparison) => ({
-        url: `${baseUrl}/compare/${comparison.slug}`,
-        lastModified: new Date(comparison.updated_at),
-        changeFrequency: "weekly" as const,
-        priority: 0.75,
-      })),
-    ];
-  } catch {
-    return staticPages;
-  }
-}
-
+            AND ai.identifier_value ~ '^[A-Za-z0-9]+$'
         )
         AND EXISTS (
           SELECT 1
