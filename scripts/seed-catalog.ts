@@ -204,71 +204,110 @@ async function ensureBrand(name: string) {
   return Number(rows[0].id);
 }
 
+async function ensureRetailer(name: string, domain: string, affiliateProgram?: string, affiliateStatus?: string) {
+  const rows = await sql`
+    INSERT INTO retailers (name, domain, affiliate_program, affiliate_status)
+    VALUES (${name}, ${domain}, ${affiliateProgram ?? null}, ${affiliateStatus ?? "inactive"})
+    ON CONFLICT (domain) DO UPDATE SET
+      name = EXCLUDED.name,
+      affiliate_program = COALESCE(EXCLUDED.affiliate_program, retailers.affiliate_program),
+      affiliate_status = CASE
+        WHEN EXCLUDED.affiliate_status <> 'inactive' THEN EXCLUDED.affiliate_status
+        ELSE retailers.affiliate_status
+      END
+    RETURNING id
+  `;
+  return Number(rows[0].id);
+}
+
+function amazonUrl(asin: string): string {
+  const tag = process.env.AMAZON_ASSOCIATE_TAG?.trim() || "airfryerintel-20";
+  return `https://www.amazon.com/dp/${encodeURIComponent(asin.trim().toUpperCase())}?tag=${encodeURIComponent(tag)}`;
+}
+
 async function sync() {
-  await sql`
+  const categoryRows = await sql`
     INSERT INTO categories (slug, name, description)
     VALUES ('air-fryers', 'Air Fryers', 'Air fryer products and structured specifications.')
-    ON CONFLICT (slug) DO NOTHING
+    ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description
+    RETURNING id
   `;
+  const categoryId = Number(categoryRows[0].id);
+  const amazonRetailerId = await ensureRetailer("Amazon.com", "amazon.com", "Amazon Associates", "active");
 
   for (const item of catalog) {
     const brandId = await ensureBrand(item.brand);
 
-    await sql`
-      UPDATE products
-      SET brand_id = ${brandId},
-          model = ${item.model},
-          title = ${item.title},
-          capacity_quart = ${item.capacityQuart},
-          basket_type = ${item.basketType},
-          basket_count = ${item.basketCount},
-          wattage = COALESCE(${item.wattage ?? null}, wattage),
-          dishwasher_safe = COALESCE(${item.dishwasherSafe ?? null}, dishwasher_safe),
-          temperature_min = COALESCE(${item.temperatureMin ?? null}, temperature_min),
-          temperature_max = COALESCE(${item.temperatureMax ?? null}, temperature_max),
-          dimensions = COALESCE(${item.dimensions ? JSON.stringify(item.dimensions) : null}::jsonb, dimensions),
-          weight = COALESCE(${item.weightKg ?? null}, weight),
-          status = 'active',
-          lifecycle_state = 'published',
-          quality_score = GREATEST(COALESCE(quality_score, 0), 88),
-          indexable = true,
-          updated_at = NOW()
-      WHERE slug = ${item.slug}
+    const productRows = await sql`
+      INSERT INTO products (
+        slug, brand_id, model, title, category_id, capacity_quart, basket_type, basket_count,
+        wattage, dishwasher_safe, temperature_min, temperature_max, dimensions, weight,
+        status, lifecycle_state, quality_score, indexable, updated_at
+      )
+      VALUES (
+        ${item.slug}, ${brandId}, ${item.model}, ${item.title}, ${categoryId},
+        ${item.capacityQuart}, ${item.basketType}, ${item.basketCount},
+        ${item.wattage ?? null}, ${item.dishwasherSafe ?? null},
+        ${item.temperatureMin ?? null}, ${item.temperatureMax ?? null},
+        ${item.dimensions ? JSON.stringify(item.dimensions) : null}::jsonb,
+        ${item.weightKg ?? null}, 'active', 'published', 88, true, NOW()
+      )
+      ON CONFLICT (slug) DO UPDATE SET
+        brand_id = EXCLUDED.brand_id,
+        model = EXCLUDED.model,
+        title = EXCLUDED.title,
+        category_id = EXCLUDED.category_id,
+        capacity_quart = EXCLUDED.capacity_quart,
+        basket_type = EXCLUDED.basket_type,
+        basket_count = EXCLUDED.basket_count,
+        wattage = COALESCE(EXCLUDED.wattage, products.wattage),
+        dishwasher_safe = COALESCE(EXCLUDED.dishwasher_safe, products.dishwasher_safe),
+        temperature_min = COALESCE(EXCLUDED.temperature_min, products.temperature_min),
+        temperature_max = COALESCE(EXCLUDED.temperature_max, products.temperature_max),
+        dimensions = COALESCE(EXCLUDED.dimensions, products.dimensions),
+        weight = COALESCE(EXCLUDED.weight, products.weight),
+        status = 'active',
+        lifecycle_state = 'published',
+        quality_score = GREATEST(COALESCE(products.quality_score, 0), EXCLUDED.quality_score),
+        indexable = true,
+        updated_at = NOW()
+      RETURNING id
     `;
+    const productId = Number(productRows[0].id);
 
     await sql`
       INSERT INTO product_images (product_id, image_url, source, licensed, sort_order)
-      SELECT p.id, ${item.imageUrl}, ${item.imageSource}, false, 0
-      FROM products p
-      WHERE p.slug = ${item.slug}
-        AND NOT EXISTS (
-          SELECT 1 FROM product_images pi
-          WHERE pi.product_id = p.id AND pi.image_url = ${item.imageUrl}
-        )
+      VALUES (${productId}, ${item.imageUrl}, ${item.imageSource}, false, 0)
+      ON CONFLICT DO NOTHING
     `;
 
     for (const identifier of item.identifiers ?? []) {
       await sql`
         INSERT INTO product_identifiers
           (product_id, identifier_type, identifier_value, source, verified, source_timestamp, verified_at)
-        SELECT p.id, ${identifier.type}, ${identifier.value}, ${identifier.source},
-          ${identifier.verified}, NOW(),
-          CASE WHEN ${identifier.verified} THEN NOW() ELSE NULL END
-        FROM products p
-        WHERE p.slug = ${item.slug}
-          AND NOT EXISTS (
-            SELECT 1 FROM product_identifiers i
-            WHERE i.product_id = p.id
-              AND i.identifier_type = ${identifier.type}
-              AND i.identifier_value = ${identifier.value}
-          )
+        VALUES (
+          ${productId}, ${identifier.type}, ${identifier.value}, ${identifier.source},
+          ${identifier.verified}, NOW(), CASE WHEN ${identifier.verified} THEN NOW() ELSE NULL END
+        )
+        ON CONFLICT (identifier_type, identifier_value) DO NOTHING
+      `;
+    }
+
+    const asin = item.identifiers?.find((identifier) => identifier.type.toUpperCase() === "ASIN")?.value;
+    if (asin) {
+      const url = amazonUrl(asin);
+      await sql`
+        INSERT INTO product_retailers (
+          product_id, retailer_id, external_product_id, url, affiliate_url, currency, availability
+        )
+        VALUES (${productId}, ${amazonRetailerId}, ${asin.trim().toUpperCase()}, ${url}, ${url}, 'USD', NULL)
+        ON CONFLICT DO NOTHING
       `;
     }
   }
 
-  console.log("Catalog sync complete: " + catalog.length + " products enriched.");
+  console.log("Catalog sync complete: " + catalog.length + " products synced.");
 }
-
 sync().catch((error) => {
   console.error("Catalog sync failed:", error);
   process.exit(1);
