@@ -62,3 +62,49 @@
  .market-brand-list{grid-template-columns:repeat(2,1fr)}
  .market-brand-list a:nth-child(2n){border-right:0}
 }
+
+/* Final marketplace visual polish */
+.storefront-home{background:#eaeded;color:#0f1111}
+.store-hero{padding:0 0 18px;background:linear-gradient(180deg,#dbe7ef 0%,#eef3f5 72%,#eaeded 100%)}
+.store-hero__grid{min-height:360px;align-items:center}
+.store-hero__copy{padding:34px 0 24px;max-width:650px}
+.store-kicker{font-size:.66rem;font-weight:800;letter-spacing:.08em;color:#566}
+.store-hero h1{font-size:clamp(2.2rem,4.5vw,4rem);line-height:.98;letter-spacing:-.045em;max-width:620px}
+.store-hero p{font-size:.95rem;max-width:570px;color:#39424a;margin:14px 0 18px}
+.store-search{height:52px;display:flex;background:#fff;border:2px solid #f3a847;border-radius:5px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.store-search span{width:46px;display:grid;place-items:center;font-size:1.5rem;color:#687078}
+.store-search input{min-width:0;flex:1;border:0;outline:0;padding:0 6px;font-size:.86rem}
+.store-search button{width:86px;border:0;background:#febd69;color:#111;font-weight:800}
+.store-quick{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.68rem}
+.store-quick span{color:#565959}.store-quick a{color:#007185}
+.store-hero__visual{position:relative;min-height:340px;display:grid;place-items:center}
+.store-hero__visual img{width:min(100%,470px);height:auto;object-fit:contain;filter:drop-shadow(0 16px 18px rgba(0,0,0,.15))}
+.hero-product-label{position:absolute;right:2%;bottom:10px;max-width:270px;padding:11px 13px;background:#fff;border:1px solid #ddd;box-shadow:0 2px 7px rgba(0,0,0,.16);display:flex;flex-direction:column}
+.hero-product-label small{font-size:.54rem;color:#c45500;font-weight:800}.hero-product-label strong{font-size:.74rem;line-height:1.25;margin-top:3px}.hero-product-label span{font-size:.62rem;color:#007185;margin-top:5px}
+.store-proof{background:#fff;border-bottom:1px solid #ddd}
+.store-proof__grid{grid-template-columns:repeat(4,1fr);padding:18px 0}
+.store-proof__grid div{padding:0 20px;border-right:1px solid #ddd}.store-proof__grid div:first-child{padding-left:0}.store-proof__grid div:last-child{border-right:0}
+.store-proof strong{font-size:.9rem;color:#0f1111}.store-proof span{display:block;color:#565959;font-size:.64rem;margin-top:2px}
+.section.store-section{padding:28px 0;background:#fff}
+.market-products-section{margin-top:0}
+.market-products-section .shell,.market-category-strip .shell,.market-tools .shell,.market-brands .shell{max-width:1400px}
+.market-product-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.market-product-grid .card{background:#fff;border:1px solid #ddd;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.market-product-grid .card:hover{box-shadow:0 3px 12px rgba(0,0,0,.14);transform:translateY(-1px)}
+.market-category-strip{padding:28px 0;background:#eaeded}
+.market-category-card{min-height:178px;background:#fff}
+.market-category-card__icon{background:#f7f7f7;border:1px solid #eee}
+.capacity-pills{display:grid!important;grid-template-columns:repeat(5,1fr);gap:10px}
+.capacity-pills a{background:#fff!important;border:1px solid #ddd!important;border-radius:3px!important;padding:16px!important;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.capacity-pills a:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);transform:none!important}
+.store-data{background:#fff;padding:30px 0}
+.store-data__grid{background:#fff;border:1px solid #ddd;padding:24px}
+@media(max-width:900px){
+ .store-hero__grid{grid-template-columns:1fr}.store-hero__visual{min-height:260px}.store-proof__grid{grid-template-columns:repeat(2,1fr);gap:15px}.store-proof__grid div{border-right:0}
+ .market-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.capacity-pills{grid-template-columns:repeat(3,1fr)!important}
+}
+@media(max-width:600px){
+ .store-hero{padding-bottom:0}.store-hero__copy{padding:25px 0 10px}.store-hero h1{font-size:2.15rem}.store-hero__visual{min-height:230px}.hero-product-label{right:0;bottom:5px;max-width:220px}
+ .store-proof__grid{grid-template-columns:1fr 1fr;padding:14px 0}.store-proof__grid div{padding:0 8px!important}
+ .market-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.capacity-pills{grid-template-columns:repeat(2,1fr)!important}
+}
