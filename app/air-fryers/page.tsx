@@ -19,7 +19,9 @@ export default async function AirFryersPage({ searchParams }: { searchParams: Pr
   const requestedPage = Number.parseInt(params.page ?? "1", 10);
   const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const pageSize = 50;
-  const products = await getFeaturedProducts(pageSize, (page - 1) * pageSize);
+  const pageRows = await getFeaturedProducts(pageSize + 1, (page - 1) * pageSize);
+  const hasNext = pageRows.length > pageSize;
+  const products = pageRows.slice(0, pageSize);
 
   return (
     <main>
@@ -43,7 +45,7 @@ export default async function AirFryersPage({ searchParams }: { searchParams: Pr
             <nav className="catalog-pagination" aria-label="Catalog pagination">
               {page > 1 ? <Link className="button light" href={`/air-fryers?page=${page - 1}`}>← Previous</Link> : <span />}
               <span>Page {page}</span>
-              {products.length === pageSize ? <Link className="button" href={`/air-fryers?page=${page + 1}`}>Next →</Link> : <span />}
+              {hasNext ? <Link className="button" href={`/air-fryers?page=${page + 1}`}>Next →</Link> : <span />}
             </nav>
           </section>
         ) : (
