@@ -155,3 +155,6 @@ small{font-size:.875rem}
 @media(max-width:800px){.filter-grid{grid-template-columns:1fr 1fr}.search-state{display:block}.search-signals{margin-top:1.25rem}.brand-row{grid-template-columns:40px 1fr}.brand-row>span:last-child{display:none}.compare-select{grid-template-columns:1fr}.compare-select>b{text-align:center}}
 @media(max-width:480px){.shell{padding-inline:.8rem}.search-box{flex-direction:row}.search-box button{width:auto;padding-inline:1rem}.filter-grid{grid-template-columns:1fr 1fr}.product-grid{gap:.65rem}.page-title{font-size:2.65rem}.hero{padding-block:3.2rem 2.5rem}.hero h1{font-size:2rem}.card__body{padding:.6rem .65rem .7rem}.card__title{font-size:.8rem}.card__media img{padding:.35rem}}
 \n.catalog-pagination{display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:2rem}.catalog-pagination>span{color:var(--text-muted);font-size:.875rem}.catalog-pagination .button{margin-top:0}\n
+.catalog-pagination{display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:2rem}
+.catalog-pagination>span{color:var(--text-muted);font-size:.875rem}
+.catalog-pagination .button{margin-top:0}
