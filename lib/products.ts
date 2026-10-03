@@ -48,7 +48,7 @@ export async function getBrands(): Promise<Array<{ slug: string; name: string; p
   `;
   return rows as unknown as Array<{ slug: string; name: string; product_count: number }>;
 }
-export async function getFeaturedProducts(limit = 12): Promise<ProductSearchRow[]> {
+export async function getFeaturedProducts(limit = 12, offset = 0): Promise<ProductSearchRow[]> {
   const db = getDb();
   if (!db) return [];
   const rows = await db`
