@@ -76,10 +76,27 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <section className="store-catalog-tools">
         <div className="shell">
           <Link href="/compare"><strong>Compare models</strong><span>Side-by-side specifications →</span></Link>
-          <Link href="/brands"><strong>Browse brands</strong><span>{brands.length} brands in the catalog →</span></Link>
+          <Link href="/brands"><strong>Browse brands</strong><span>{brands.length} Amazon-backed brands →</span></Link>
           <Link href="/air-fryers/6-quart"><strong>6-quart air fryers</strong><span>Shop a popular size →</span></Link>
         </div>
       </section>
+      {brands.length > 0 && (
+        <section className="section store-section">
+          <div className="shell">
+            <div className="section-head">
+              <div><span className="eyebrow">POPULAR BRANDS</span><h2>Brands to watch</h2></div>
+              <Link href="/brands">All brands →</Link>
+            </div>
+            <div className="brand-list">
+              {brands.slice(0, 10).map((brand) => (
+                <Link href={`/search?q=${encodeURIComponent(brand.name)}`} className="brand-row" key={brand.slug}>
+                  <strong>{brand.name}</strong><span>{brand.product_count} Amazon models →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
       <SiteFooter />
     </main>
   );
