@@ -25,12 +25,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/air-fryers/6-quart`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/best/air-fryers-for-two`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/best/dual-basket-air-fryers`, changeFrequency: "weekly", priority: 0.8 },
-    { url: \`${baseUrl}/about\`, changeFrequency: "monthly", priority: 0.5 },
-    { url: \`${baseUrl}/how-we-rank\`, changeFrequency: "monthly", priority: 0.6 },
-    { url: \`${baseUrl}/contact\`, changeFrequency: "monthly", priority: 0.4 },
-    { url: \`${baseUrl}/affiliate-disclosure\`, changeFrequency: "monthly", priority: 0.4 },
-    { url: \`${baseUrl}/privacy\`, changeFrequency: "yearly", priority: 0.2 },
-    { url: \`${baseUrl}/terms\`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${baseUrl}/about`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/how-we-rank`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/contact`, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${baseUrl}/affiliate-disclosure`, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${baseUrl}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${baseUrl}/terms`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
   const db = getDb();
