@@ -3,38 +3,15 @@ import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getBrands, getCatalogCount, getFeaturedProducts, type ProductSearchRow } from "@/lib/products";
+import { getBrands, getCatalogCount, getFeaturedProducts } from "@/lib/products";
 
 const capacities = [
-  ["2–4 qt", "Small kitchens", "/search?q=4+qt"],
-  ["5 qt", "Everyday size", "/search?q=5+qt"],
-  ["6 qt", "Popular capacity", "/air-fryers/6-quart"],
-  ["8 qt", "Family cooking", "/search?q=8+qt"],
-  ["9–10+ qt", "Large batches", "/search?q=10+qt"],
+  ["2–4 qt", "Compact", "/search?q=4+qt"],
+  ["5 qt", "Everyday", "/search?q=5+qt"],
+  ["6 qt", "Most popular", "/air-fryers/6-quart"],
+  ["8 qt", "Family size", "/search?q=8+qt"],
+  ["9–10+ qt", "Big batches", "/search?q=10+qt"],
 ];
-
-function ModelRow({ product }: { product: ProductSearchRow }) {
-  const modelLine = [product.brand_name ?? "Air fryer", product.model].filter(Boolean).join(" · ");
-  const capacity = product.capacity_quart ? String(product.capacity_quart) + " qt" : "—";
-
-  return (
-    <Link href={"/products/" + product.slug} className="intel-model">
-      <div className="intel-model__image">
-        {product.image_url ? (
-          <Image src={product.image_url} alt={product.title} width={150} height={150} sizes="90px" />
-        ) : <span>AF</span>}
-      </div>
-      <div className="intel-model__name">
-        <strong>{product.title}</strong>
-        <small>{modelLine}</small>
-      </div>
-      <div><b>{capacity}</b><small>capacity</small></div>
-      <div><b>{product.basket_count ?? "—"}</b><small>baskets</small></div>
-      <div><b>{product.basket_type ?? "—"}</b><small>basket type</small></div>
-      <span className="intel-arrow">→</span>
-    </Link>
-  );
-}
 
 export default async function HomePage() {
   const [products, brands, catalogCount] = await Promise.all([
@@ -42,116 +19,87 @@ export default async function HomePage() {
     getBrands(),
     getCatalogCount(),
   ]);
+  const heroProduct = products[0];
+  const secondaryProducts = products.slice(1, 5);
 
   return (
-    <main className="intel-home">
+    <main className="storefront-home">
       <SiteHeader />
-      <section className="intel-hero">
-        <div className="shell">
-          <div className="intel-hero__eyebrow">AIR FRYER INTELLIGENCE</div>
-          <h1>Air fryer models,<br /><span>specs & comparisons.</span></h1>
-          <p>Search real models, check the specifications that matter, and compare products before you buy.</p>
-          <form action="/search" method="get" className="intel-search">
-            <span aria-hidden="true">⌕</span>
-            <input type="search" name="q" required minLength={2} autoComplete="off" placeholder="Search by model, brand, ASIN or UPC" aria-label="Search air fryers" />
-            <button type="submit">Search</button>
-          </form>
-          <div className="intel-search-links">
-            <span>Browse:</span>
-            <Link href="/air-fryers">All air fryers</Link>
-            <Link href="/air-fryers/6-quart">6-quart</Link>
-            <Link href="/best/dual-basket-air-fryers">Dual basket</Link>
-            <Link href="/brands">Brands</Link>
+
+      <section className="store-hero">
+        <div className="shell store-hero__grid">
+          <div className="store-hero__copy">
+            <span className="store-kicker">THE AIR FRYER EDIT</span>
+            <h1>Find the air fryer that fits <em>your kitchen.</em></h1>
+            <p>Explore real models, compare the details that matter, and shop with product information you can actually verify.</p>
+            <form action="/search" method="get" className="store-search">
+              <span aria-hidden="true">⌕</span>
+              <input type="search" name="q" required minLength={2} autoComplete="off" placeholder="Search brand, model, ASIN or UPC" aria-label="Search air fryers" />
+              <button type="submit">Find my fryer</button>
+            </form>
+            <div className="store-quick"><span>Popular:</span><Link href="/air-fryers/6-quart">6 quart</Link><Link href="/best/dual-basket-air-fryers">dual basket</Link><Link href="/brands">top brands</Link></div>
+          </div>
+          <div className="store-hero__visual">
+            <div className="hero-orbit hero-orbit--one" />
+            <div className="hero-orbit hero-orbit--two" />
+            {heroProduct?.image_url ? (
+              <Image src={heroProduct.image_url} alt={heroProduct.title} width={620} height={620} priority sizes="(max-width: 900px) 80vw, 48vw" />
+            ) : <div className="hero-placeholder">AF</div>}
+            {heroProduct && <Link href={`/products/${heroProduct.slug}`} className="hero-product-label"><small>FEATURED MODEL</small><strong>{heroProduct.title}</strong><span>View product →</span></Link>}
           </div>
         </div>
       </section>
 
-      <section className="intel-stats">
-        <div className="shell intel-stats__grid">
-          <div><b>{catalogCount}</b><span>catalog models</span></div>
-          <div><b>{brands.length}</b><span>brands</span></div>
-          <div><b>5</b><span>browse sizes</span></div>
-          <div><b>1</b><span>product catalog</span></div>
+      <section className="store-proof">
+        <div className="shell store-proof__grid">
+          <div><strong>{catalogCount}</strong><span>models</span></div>
+          <div><strong>{brands.length}</strong><span>brands</span></div>
+          <div><strong>Verified</strong><span>source-aware data</span></div>
+          <div><strong>Compare</strong><span>before you buy</span></div>
         </div>
       </section>
 
-      <section className="section intel-section">
+      <section className="section store-section">
         <div className="shell">
-          <div className="intel-section-head">
-            <div>
-              <span className="eyebrow">CATALOG</span>
-              <h2>Compare the models at a glance</h2>
-              <p>Structured product information in one compact view.</p>
-            </div>
-            <Link href="/air-fryers" className="intel-text-link">View all {catalogCount} models →</Link>
-          </div>
-          <div className="intel-model-table">
-            <div className="intel-model-table__head">
-              <span>MODEL</span><span>CAPACITY</span><span>BASKETS</span><span>TYPE</span><span />
-            </div>
-            {products.slice(0, 6).map((product) => <ModelRow key={product.slug} product={product} />)}
-          </div>
-        </div>
-      </section>
-
-      <section className="intel-tools">
-        <div className="shell">
-          <div className="intel-section-head compact">
-            <div><span className="eyebrow">TOOLS</span><h2>Choose how you want to shop</h2></div>
-          </div>
-          <div className="intel-tools-grid">
-            <Link href="/compare"><b>Compare models</b><span>Put two products side by side.</span><i>→</i></Link>
-            <Link href="/air-fryers"><b>Results table</b><span>Browse the full catalog.</span><i>→</i></Link>
-            <Link href="/brands"><b>Browse brands</b><span>Explore products by maker.</span><i>→</i></Link>
-            <Link href="/air-fryers/6-quart"><b>6-quart guide</b><span>See the popular capacity.</span><i>→</i></Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="section intel-section">
-        <div className="shell">
-          <div className="intel-section-head">
-            <div><span className="eyebrow">BROWSE BY SIZE</span><h2>Find the capacity that fits</h2></div>
-          </div>
-          <div className="intel-capacity-grid">
-            {capacities.map(([size, note, href]) => (
-              <Link href={href} key={size}>
-                <strong>{size}</strong><span>{note}</span><i>Explore →</i>
+          <div className="store-heading"><div><span className="store-kicker">EDITOR'S PICKS</span><h2>Models worth a closer look</h2><p>Real products from the catalog, presented without the spreadsheet feel.</p></div><Link href="/air-fryers">Shop all models <b>→</b></Link></div>
+          {products.length > 0 && <div className="feature-products">
+            {products.slice(0, 2).map((product, i) => (
+              <Link href={`/products/${product.slug}`} className="feature-product" key={product.slug}>
+                <div className="feature-product__image">{product.image_url ? <Image src={product.image_url} alt={product.title} width={520} height={520} sizes="(max-width: 700px) 85vw, 38vw" /> : <span>AF</span>}</div>
+                <div className="feature-product__copy"><small>{i === 0 ? "FEATURED" : "EDITOR PICK"}</small><h3>{product.title}</h3><p>{product.brand_name ?? "Air fryer"}{product.capacity_quart ? ` · ${product.capacity_quart} qt` : ""}</p><span>Explore model →</span></div>
               </Link>
             ))}
+          </div>}
+        </div>
+      </section>
+
+      <section className="section store-section store-section--cream">
+        <div className="shell">
+          <div className="store-heading"><div><span className="store-kicker">SHOP THE CATALOG</span><h2>Fresh finds</h2></div><Link href="/air-fryers">View catalog <b>→</b></Link></div>
+          <div className="store-product-grid">{secondaryProducts.map((product) => <ProductCard key={product.slug} product={product} />)}</div>
+        </div>
+      </section>
+
+      <section className="store-dark">
+        <div className="shell store-dark__grid">
+          <div><span className="store-kicker">MAKE A SMARTER CHOICE</span><h2>Not sure what size or style you need?</h2><p>Start with capacity, basket configuration or a side-by-side comparison instead of scrolling through endless listings.</p></div>
+          <div className="shop-tools">
+            <Link href="/compare"><span>01</span><strong>Compare two models</strong><b>→</b></Link>
+            <Link href="/air-fryers/6-quart"><span>02</span><strong>Explore 6-quart</strong><b>→</b></Link>
+            <Link href="/brands"><span>03</span><strong>Browse brands</strong><b>→</b></Link>
           </div>
         </div>
       </section>
 
-      {products.length > 0 && (
-        <section className="section intel-section intel-products">
-          <div className="shell">
-            <div className="intel-section-head">
-              <div><span className="eyebrow">CATALOG MODELS</span><h2>Catalog models</h2></div>
-              <Link href="/air-fryers" className="intel-text-link">See full catalog →</Link>
-            </div>
-            <div className="product-grid">
-              {products.slice(0, 4).map((product) => <ProductCard key={product.slug} product={product} />)}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className="section intel-method">
+      <section className="section store-section">
         <div className="shell">
-          <div className="intel-method__grid">
-            <div>
-              <span className="eyebrow">ABOUT THE DATA</span>
-              <h2>Product data, clearly sourced.</h2>
-              <p>Air Fryer Intelligence is built around model-level product data: names, identifiers, capacity, basket configuration, specifications and retailer availability when verified.</p>
-            </div>
-            <div className="intel-method__links">
-              <Link href="/affiliate-disclosure">Affiliate disclosure <span>→</span></Link>
-              <Link href="/brands">Browse brands <span>→</span></Link>
-              <Link href="/air-fryers">Browse catalog <span>→</span></Link>
-            </div>
-          </div>
+          <div className="store-heading"><div><span className="store-kicker">BY CAPACITY</span><h2>Choose your size</h2></div></div>
+          <div className="capacity-pills">{capacities.map(([size, note, href]) => <Link href={href} key={size}><strong>{size}</strong><span>{note}</span><b>→</b></Link>)}</div>
         </div>
+      </section>
+
+      <section className="store-data">
+        <div className="shell store-data__grid"><div><span className="store-kicker">WHY THIS SITE</span><h2>Product intelligence without the clutter.</h2></div><p>Air Fryer Intelligence keeps model-level specifications, identifiers, sourcing and retailer availability together so you can make a better decision without pretending missing data is verified.</p></div>
       </section>
       <SiteFooter />
     </main>
