@@ -48,6 +48,13 @@ export async function getBrands(): Promise<Array<{ slug: string; name: string; p
   `;
   return rows as unknown as Array<{ slug: string; name: string; product_count: number }>;
 }
+export async function getCatalogCount(): Promise<number> {
+  const db = getDb();
+  if (!db) return 0;
+  const rows = await db`SELECT COUNT(*)::int AS count FROM products WHERE status = 'active' AND indexable = true`;
+  return Number(rows[0]?.count ?? 0);
+}
+
 export async function getFeaturedProducts(limit = 12, offset = 0): Promise<ProductSearchRow[]> {
   const db = getDb();
   if (!db) return [];
