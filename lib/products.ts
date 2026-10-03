@@ -101,7 +101,7 @@ export async function getProductBySlug(slug: string): Promise<ProductRecord | nu
         FROM product_identifiers i WHERE i.product_id = p.id AND i.verified = true), '[]'::json) AS identifiers,
       COALESCE((SELECT json_agg(json_build_object('retailer_slug', r.domain, 'retailer_name', r.name, 'external_product_id', pr.external_product_id, 'price', pr.price, 'currency', pr.currency, 'url', pr.url, 'affiliate_url', pr.affiliate_url, 'availability', pr.availability, 'last_checked_at', pr.last_checked_at) ORDER BY pr.price NULLS LAST)
         FROM product_retailers pr JOIN retailers r ON r.id = pr.retailer_id
-        WHERE pr.product_id = p.id AND pr.availability = 'in_stock' AND pr.affiliate_url IS NOT NULL), '[]'::json) AS offers
+        WHERE pr.product_id = p.id AND pr.affiliate_url IS NOT NULL), '[]'::json) AS offers
     FROM products p LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.slug = ${slug} AND p.status = 'active' LIMIT 1
   `;
