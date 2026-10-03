@@ -31,7 +31,7 @@ export default async function AirFryersPage() {
           <section className="section">
             <div className="section-head">
               <div><span className="eyebrow">PRODUCTS</span><h2>Catalog models</h2></div>
-              <span>{products.length} models</span>
+              <span>{products.length} models · Page {page}</span>
             </div>
             <div className="product-grid">
               {products.map(product => <ProductCard key={product.slug} product={product} />)}
