@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const filters = ["Compact", "4 Quart", "6 Quart", "8 Quart", "10+ Quart", "Dual Basket", "Dishwasher Safe", "Rotisserie"];
 
 export default async function AirFryersPage() {
-  const products = await getFeaturedProducts(24);
+  const products = await getFeaturedProducts(100);
 
   return (
     <main>
