@@ -63,7 +63,7 @@ export default async function ComparePage({
   searchParams: Promise<{ a?: string; b?: string }>;
 }) {
   const { a, b } = await searchParams;
-  const products = await getFeaturedProducts(24);
+  const products = await getFeaturedProducts(50);
 
   const left = a ? await getProductBySlug(a) : null;
   let suggestedSlug: string | null = null;
