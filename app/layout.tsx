@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./catalog-compact.css";
 import "./audit-polish.css";
+import "./redesign.css";
 
 const FALLBACK_SITE_URL = "https://airfryer1.vercel.app";
 function getBaseUrl(): string { const configured=process.env.NEXT_PUBLIC_SITE_URL?.trim(); if(!configured)return FALLBACK_SITE_URL; try { const url=new URL(/^https?:\/\//i.test(configured)?configured:`https://${configured}`); return url.origin; } catch { return FALLBACK_SITE_URL; } }
