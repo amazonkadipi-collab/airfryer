@@ -16,8 +16,7 @@ const capacities = [
 function FeaturedVisual({ product }: { product: ProductSearchRow }) {
   return (
     <div className="home-featured" aria-label={product.title}>
-      <div className="home-featured__decor home-featured__decor--one" />
-      <div className="home-featured__decor home-featured__decor--two" />
+      <div className="home-graphic" aria-hidden="true"><span className="home-graphic__ring home-graphic__ring--1" /><span className="home-graphic__ring home-graphic__ring--2" /><span className="home-graphic__spark home-graphic__spark--1">✦</span><span className="home-graphic__spark home-graphic__spark--2">•</span></div>
       <div className="home-featured__top">
         <span className="eyebrow">FEATURED FROM THE CATALOG</span>
         <span className="home-live"><i /> live catalog</span>
