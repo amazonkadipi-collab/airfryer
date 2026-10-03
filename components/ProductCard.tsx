@@ -15,37 +15,38 @@ export interface ProductCardData {
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const specs = [
-    product.model ? `Model: ${product.model}` : null,
     product.capacity_quart ? `${product.capacity_quart} qt` : null,
     product.basket_type,
+    product.model ? `Model ${product.model}` : null,
   ].filter(Boolean);
 
   const imageUrl = getCatalogImage(product.slug, product.image_url);
 
   return (
-    <Link href={`/products/${product.slug}`} className="card">
-      <div className="card__media">
+    <article className="card">
+      <Link href={`/products/${product.slug}`} className="card__media" aria-label={`View ${product.title}`}>
         {imageUrl ? (
           <Image
             src={imageUrl}
             alt={product.title}
-            width={400}
-            height={400}
-            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 260px"
+            width={500}
+            height={500}
+            sizes="(max-width: 640px) 46vw, (max-width: 1024px) 29vw, 270px"
             loading="lazy"
           />
         ) : (
-          <div className="card__placeholder" aria-hidden="true">
-            <span>AF</span>
-          </div>
+          <div className="card__placeholder" aria-hidden="true"><span>AF</span></div>
         )}
-      </div>
+      </Link>
       <div className="card__body">
-        {product.brand_name && <p className="card__brand">{product.brand_name}</p>}
-        <h3 className="card__title">{product.title}</h3>
+        {product.brand_name && <Link href={`/search?q=${encodeURIComponent(product.brand_name)}`} className="card__brand">{product.brand_name}</Link>}
+        <Link href={`/products/${product.slug}`}><h3 className="card__title">{product.title}</h3></Link>
         {specs.length > 0 && <p className="card__specs">{specs.join(" · ")}</p>}
-        <span className="card__link">View full details →</span>
+        <div className="card__bottom">
+          <span className="card__link">See details</span>
+          <span className="card__arrow" aria-hidden="true">›</span>
+        </div>
       </div>
-    </Link>
+    </article>
   );
 }
