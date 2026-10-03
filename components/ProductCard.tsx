@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { getCatalogImage } from "@/lib/product-images";
 
 export interface ProductCardData {
@@ -14,29 +17,29 @@ export interface ProductCardData {
 }
 
 export function ProductCard({ product }: { product: ProductCardData }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageUrl = getCatalogImage(product.slug, product.image_url);
+
+  if (!imageUrl || imageFailed) return null;
+
   const specs = [
     product.capacity_quart ? `${product.capacity_quart} qt` : null,
     product.basket_type,
     product.model ? `Model ${product.model}` : null,
   ].filter(Boolean);
 
-  const imageUrl = getCatalogImage(product.slug, product.image_url);
-
   return (
     <article className="card">
       <Link href={`/products/${product.slug}`} className="card__media" aria-label={`View ${product.title}`}>
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={product.title}
-            width={500}
-            height={500}
-            sizes="(max-width: 640px) 46vw, (max-width: 1024px) 29vw, 270px"
-            loading="lazy"
-          />
-        ) : (
-          <div className="card__placeholder" aria-hidden="true"><span>AF</span></div>
-        )}
+        <Image
+          src={imageUrl}
+          alt={product.title}
+          width={500}
+          height={500}
+          sizes="(max-width: 640px) 46vw, (max-width: 1024px) 29vw, 270px"
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+        />
       </Link>
       <div className="card__body">
         {product.brand_name && <Link href={`/search?q=${encodeURIComponent(product.brand_name)}`} className="card__brand">{product.brand_name}</Link>}
