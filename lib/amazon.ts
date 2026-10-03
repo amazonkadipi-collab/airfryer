@@ -7,8 +7,17 @@ export function isAmazonRetailer(domain: string | null | undefined): boolean {
 }
 
 export function getAmazonAffiliateUrl(asin: string): string {
-  const clean = asin.trim();
+  const clean = asin.trim().toUpperCase();
+  if (!clean) return "";
   return `https://${MARKETPLACE}/dp/${encodeURIComponent(clean)}?tag=${encodeURIComponent(STORE_ID)}`;
+}
+
+export function getAmazonAsin(identifiers: Array<{ identifier_type: string; identifier_value: string }> | null | undefined): string | null {
+  const match = (identifiers ?? []).find(
+    (item) => item.identifier_type.trim().toUpperCase() === "ASIN" &&
+      /^[A-Z0-9]{10}$/.test(item.identifier_value.trim().toUpperCase())
+  );
+  return match?.identifier_value.trim().toUpperCase() ?? null;
 }
 
 export function getAmazonConfig() {
