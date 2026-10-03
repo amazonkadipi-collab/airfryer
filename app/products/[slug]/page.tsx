@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getProductBySlug, getSimilarProducts } from "@/lib/products";
 import { getCatalogImage, getCatalogSource } from "@/lib/product-images";
+import { getAmazonAffiliateUrl, isAmazonRetailer } from "@/lib/amazon";
 
 type Props = { params: Promise<{ slug: string }> };
 
