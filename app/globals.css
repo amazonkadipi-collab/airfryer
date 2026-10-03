@@ -250,3 +250,14 @@ small{font-size:.875rem}
 @media(max-width:430px){
   .shell{padding-inline:.8rem}.home-hero h1{font-size:2.7rem}.home-search{border-radius:12px}.home-search button{padding-inline:12px}.home-mini-stats{width:100%}.home-mini-stats span{flex:1;min-width:0}.home-featured__top{align-items:flex-start}.home-featured__top .eyebrow{max-width:60%}.home-featured__signal b{font-size:.66rem}
 }
+
+/* Friendly product-led graphics */
+.home-graphic{position:absolute;inset:0;pointer-events:none;z-index:1}
+.home-graphic__ring{position:absolute;border:1px solid rgba(231,131,118,.16);border-radius:50%;animation:homeFloat 7s ease-in-out infinite}
+.home-graphic__ring--1{width:340px;height:340px;right:-105px;top:20px}
+.home-graphic__ring--2{width:220px;height:220px;left:-75px;bottom:-90px;border-style:dashed;border-color:rgba(159,186,165,.28);animation-delay:-2s}
+.home-graphic__spark{position:absolute;color:#e78376;font-weight:900;opacity:.55}
+.home-graphic__spark--1{right:17%;top:10%;font-size:1.2rem}.home-graphic__spark--2{left:8%;bottom:20%;font-size:1.7rem;color:#9fbaa5}
+@keyframes homeFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(2deg)}}
+.home-featured__product,.home-featured__signal,.home-featured__top{z-index:2}
+@media(prefers-reduced-motion:reduce){.home-graphic__ring{animation:none}}
