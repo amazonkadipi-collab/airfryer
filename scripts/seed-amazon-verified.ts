@@ -153,6 +153,9 @@ async function sync() {
   `;
   const retailerId = Number(retailerRows[0].id);
 
+  // Only the records in this verified allowlist are eligible for indexing.
+  await sql`UPDATE products SET indexable=false, updated_at=NOW() WHERE indexable=true`;
+
   for (const item of products) {
     const brandId = await ensureBrand(item.brand);
     const url = amazonUrl(item.asin);
@@ -232,19 +235,6 @@ async function sync() {
       `;
     }
   }
-
-  // Do not publish the old catalog records until their Amazon identity, image and
-  // product data have been independently verified.
-  const verifiedAsins = products.map((p) => p.asin.toUpperCase());
-  await sql`
-    UPDATE products p
-    SET indexable=false, updated_at=NOW()
-    WHERE p.indexable=true AND NOT EXISTS (
-      SELECT 1 FROM product_identifiers i
-      WHERE i.product_id=p.id AND upper(i.identifier_type)='ASIN'
-        AND i.verified=true AND upper(i.identifier_value)=ANY(${verifiedAsins})
-    )
-  `;
 
   console.log(`Verified Amazon catalog sync complete: ${products.length} products.`);
 }
