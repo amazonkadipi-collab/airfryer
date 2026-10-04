@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "if [ -n \"$DATABASE_URL\" ]; then npm run seed:catalog; fi && next build",
+    "build": "if [ -n \"$DATABASE_URL\" ]; then npm run seed:catalog && npm run seed:amazon-verified; fi && next build",
     "start": "next start",
     "lint": "eslint .",
     "fetch:apify": "tsx scripts/fetch-apify.ts",
@@ -12,7 +12,8 @@
     "ingest": "tsx scripts/ingest.ts",
     "validate": "tsx scripts/validate.ts",
     "dedupe": "tsx scripts/dedupe.ts",
-    "seed:catalog": "tsx scripts/seed-catalog.ts"
+    "seed:catalog": "tsx scripts/seed-catalog.ts",
+    "seed:amazon-verified": "tsx scripts/seed-amazon-verified.ts"
   },
   "dependencies": {
     "next": "15.5.26",
