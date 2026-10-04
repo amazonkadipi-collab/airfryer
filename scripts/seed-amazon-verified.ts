@@ -123,22 +123,6 @@ const products: VerifiedAmazonProduct[] = [
     asin: "B0CGMFGX87",
     features: ["Air Fry", "Bake", "Dehydrate", "Rotisserie", "Roast", "Reheat", "12 presets", "Interior light", "Dishwasher-safe parts"]
   },
-  {
-    slug: "ninja-crispi-pro-as101cy-amazon",
-    brand: "Ninja",
-    model: "AS101CY",
-    title: "Ninja Crispi Pro 6-in-1 Glass Air Fryer",
-    description: "Amazon product record for the Ninja Crispi Pro AS101CY. The Amazon listing describes a 6-in-1 glass air fryer with 450°F maximum temperature, 6-quart and 2.5-quart containers, and dishwasher-safe components.",
-    capacityQuart: 6,
-    basketType: "glass containers",
-    basketCount: 2,
-    wattage: 1800,
-    dishwasherSafe: true,
-    temperatureMax: 450,
-    imageUrl: "https://m.media-amazon.com/images/I/51WzB1iJVpL._AC_SR240,220_.jpg",
-    asin: "B0FLG6D6Z3",
-    features: ["Max Crisp", "Air Fry", "Bake", "Roast", "Recrisp", "Dehydrate", "6-quart container", "2.5-quart container", "Microwave-safe glass containers", "Dishwasher-safe"]
-  }
 ];
 
 async function ensureBrand(name: string) {
@@ -251,13 +235,14 @@ async function sync() {
 
   // Do not publish the old catalog records until their Amazon identity, image and
   // product data have been independently verified.
+  const verifiedAsins = products.map((p) => p.asin.toUpperCase());
   await sql`
     UPDATE products p
     SET indexable=false, updated_at=NOW()
-    WHERE NOT EXISTS (
+    WHERE p.indexable=true AND NOT EXISTS (
       SELECT 1 FROM product_identifiers i
       WHERE i.product_id=p.id AND upper(i.identifier_type)='ASIN'
-        AND i.verified=true AND upper(i.identifier_value) IN (${products.map(p=>p.asin).join(",")})
+        AND i.verified=true AND upper(i.identifier_value)=ANY(${verifiedAsins})
     )
   `;
 
